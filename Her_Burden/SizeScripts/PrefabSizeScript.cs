@@ -4,15 +4,28 @@ namespace CustomItemPlugin
 {
     internal class PrefabSizeScript : MonoBehaviour
     {
-        private static Vector3 originalScale = new Vector3(1f, 1f, 1f);
+        //This Vector will need to match the generalScale used in AddLocation
+        private Vector3 originalScale;
+        private Vector3 newScale;
+        internal float characterSizeMultiplier;
         //These could be set in a config if you wanted to
         internal static float maxSizeMultiplier = 10f, stackSizeMultiplier = 0.5f;
-        private Transform thisTransform;
 
         private void OnEnable()
         {
-            thisTransform = gameObject.transform;
+            originalScale = new Vector3(.0125f, .0125f, .0125f);
+            newScale = new Vector3(0.05f, 0.05f, 0.05f);
             SizeHandoffManager.prefabSizeScripts.Add(this);
+        }
+
+        private void Update()
+        {
+            transform.localScale = newScale;
+        }
+
+        private void OnDisable()
+        {
+            SizeHandoffManager.prefabSizeScripts.Remove(this);
         }
 
         //This handles all of the item size changes, and is called by BodySizeScript
@@ -21,11 +34,11 @@ namespace CustomItemPlugin
             float testSizeMultiplier = 1 + (newStacks * stackSizeMultiplier);
             if(testSizeMultiplier <= maxSizeMultiplier)
             {
-                thisTransform.localScale = originalScale * testSizeMultiplier;
+                newScale = originalScale * testSizeMultiplier;
             }
             else
             {
-                thisTransform.localScale = originalScale * maxSizeMultiplier;
+                newScale = originalScale * maxSizeMultiplier;
             }
         }
     }

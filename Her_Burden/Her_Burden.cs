@@ -24,7 +24,7 @@ namespace CustomItemPlugin
         //The Awake() method is run at the very start when the game is initialized.
         public void Awake()
         {
-            R2API.LanguageAPI.Add("HERBURDEN_NAME", "Her Burden");
+            LanguageAPI.Add("HERBURDEN_NAME", "Her Burden");
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Her_Burden.Resources.herburden"))
             {
                 var bundle = AssetBundle.LoadFromStream(stream);
@@ -40,7 +40,7 @@ namespace CustomItemPlugin
                 loreToken = "HERBURDEN_LORE",
                 tier = ItemTier.Tier1,
                 pickupIconPath = "@Her_Burden:Assets/Import/herburdenicon/itemIcon.png",
-                pickupModelPath = "@Her_Burden:Assets/Import/herburden/her_burden.blend",
+                pickupModelPath = "@Her_Burden:Assets/Import/herburden/abb.prefab",
                 canRemove = true,
                 hidden = false
             };
@@ -60,12 +60,20 @@ namespace CustomItemPlugin
                 {
                     body.gameObject.AddComponent<BodySizeScript>();
                 }
-                else
-                {
-                    body.gameObject.GetComponent<BodySizeScript>().UpdateStacks(body.inventory.GetItemCount(myItemDef.itemIndex));
-                }
             };
+
+            On.RoR2.CharacterBody.Update += CharacterBody_Update;
             WhoKnows();
+        }
+
+        //This hook just updates the stack count
+        private void CharacterBody_Update(On.RoR2.CharacterBody.orig_Update orig, CharacterBody self)
+        {
+            orig(self);
+            if (self.gameObject.GetComponent<BodySizeScript>())
+            {
+                self.gameObject.GetComponent<BodySizeScript>().UpdateStacks(self.inventory.GetItemCount(itemIndex));
+            }
         }
 
         public static void WhoKnows()
@@ -169,7 +177,7 @@ namespace CustomItemPlugin
 
         public static void AddLocation()
         {
-            GameObject followerPrefab = Resources.Load<GameObject>("@Her_Burden:Assets/Import/herburden/her_burden.blend");
+            GameObject followerPrefab = Resources.Load<GameObject>("@Her_Burden:Assets/Import/herburden/abb.prefab");
             followerPrefab.AddComponent<PrefabSizeScript>();
             Vector3 generalScale = new Vector3(.0125f, .0125f, .0125f);
             ItemDisplayRuleDict rules = new ItemDisplayRuleDict(new ItemDisplayRule[]
