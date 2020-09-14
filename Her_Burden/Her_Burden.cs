@@ -15,7 +15,7 @@ namespace CustomItemPlugin
     [BepInDependency("com.bepis.r2api")]
     [BepInPlugin("com.OkIgotIt2018.Her_Burden", "Her_Burden", "1.0.0")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI))]
-
+    [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
     public class CustomItemPlugin : BaseUnityPlugin
     {
         private static ItemDef myItemDef;
