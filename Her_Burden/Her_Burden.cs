@@ -59,6 +59,7 @@ namespace CustomItemPlugin
                 if (!body.gameObject.GetComponent<BodySizeScript>())
                 {
                     body.gameObject.AddComponent<BodySizeScript>();
+                    body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
                 }
             };
 

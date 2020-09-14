@@ -15,6 +15,7 @@ namespace CustomItemPlugin
         {
             originalScale = new Vector3(.0125f, .0125f, .0125f);
             newScale = new Vector3(0.05f, 0.05f, 0.05f);
+            characterSizeMultiplier = 1f;
             SizeHandoffManager.prefabSizeScripts.Add(this);
         }
 
@@ -34,11 +35,11 @@ namespace CustomItemPlugin
             float testSizeMultiplier = 1 + (newStacks * stackSizeMultiplier);
             if(testSizeMultiplier <= maxSizeMultiplier)
             {
-                newScale = originalScale * testSizeMultiplier;
+                newScale = originalScale * characterSizeMultiplier * testSizeMultiplier;
             }
             else
             {
-                newScale = originalScale * maxSizeMultiplier;
+                newScale = originalScale * characterSizeMultiplier * maxSizeMultiplier;
             }
         }
     }
