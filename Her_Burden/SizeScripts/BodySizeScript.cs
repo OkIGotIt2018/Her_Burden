@@ -14,6 +14,11 @@ namespace CustomItemPlugin
             globalIndexTick++;
         }
 
+        private void OnDisable()
+        {
+            globalIndexTick--;
+        }
+
         //This is passed the stack count from Inventory, and hands it to the PrefabSizeScript
         internal void UpdateStacks(int newStacks)
         {
