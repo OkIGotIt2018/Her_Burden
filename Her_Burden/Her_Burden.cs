@@ -56,7 +56,7 @@ namespace CustomItemPlugin
                 orig(self, body, inventory);
 
                 //Handle the size change with scripts
-                if (!body.gameObject.GetComponent<BodySizeScript>())
+                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(myItemDef.itemIndex) > 0)
                 {
                     body.gameObject.AddComponent<BodySizeScript>();
                     body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
