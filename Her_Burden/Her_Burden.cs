@@ -60,7 +60,7 @@ namespace CustomItemPlugin
                     body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
                 }
             };
-
+            WhoKnows();
             On.RoR2.CharacterBody.Update += CharacterBody_Update;
         }
 
