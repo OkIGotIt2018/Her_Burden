@@ -54,7 +54,7 @@ namespace CustomItemPlugin
                 orig(self, body, inventory);
 
                 //Handle the size change with scripts
-                if (!body.gameObject.GetComponent<BodySizeScript>())
+                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(myItemDef.itemIndex) > 0)
                 {
                     body.gameObject.AddComponent<BodySizeScript>();
                     body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
@@ -176,7 +176,7 @@ namespace CustomItemPlugin
         public static void AddLocation()
         {
             GameObject followerPrefab = Resources.Load<GameObject>("@Her_Burden:Assets/Import/herburden/her_burden.prefab");
-            //followerPrefab.AddComponent<PrefabSizeScript>();
+            followerPrefab.AddComponent<PrefabSizeScript>();
             Vector3 generalScale = new Vector3(.0125f, .0125f, .0125f);
             ItemDisplayRuleDict rules = new ItemDisplayRuleDict(new ItemDisplayRule[]
             {

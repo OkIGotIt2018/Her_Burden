@@ -9,7 +9,7 @@ namespace CustomItemPlugin
         private Vector3 newScale;
         internal float characterSizeMultiplier;
         //These could be set in a config if you wanted to
-        internal static float maxSizeMultiplier = 10f, stackSizeMultiplier = 0.049375f;
+        internal static float maxSizeMultiplier = 2f, stackSizeMultiplier = 0.049375f;
 
         private void OnEnable()
         {
