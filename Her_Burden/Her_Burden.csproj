@@ -62,9 +62,6 @@
     <Reference Include="R2API">
       <HintPath>..\..\ahope\R2API.dll</HintPath>
     </Reference>
-    <Reference Include="TILER2">
-      <HintPath>..\..\ahope\TILER2.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\ahope\UnityEngine.dll</HintPath>
     </Reference>

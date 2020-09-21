@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using UnityEngine;
 
-namespace CustomItemPlugin
+namespace Her_Burden
 {
     internal class BodySizeScript : MonoBehaviour
     {

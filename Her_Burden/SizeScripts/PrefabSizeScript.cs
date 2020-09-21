@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace CustomItemPlugin
+namespace Her_Burden
 {
     internal class PrefabSizeScript : MonoBehaviour
     {

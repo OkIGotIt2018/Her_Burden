@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace CustomItemPlugin
+namespace Her_Burden
 {
     //The entire purpose of this class is to hold the PrefabSizeScripts for the BodySizeScripts
     class SizeHandoffManager

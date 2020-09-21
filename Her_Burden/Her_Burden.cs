@@ -9,21 +9,23 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 
-namespace CustomItemPlugin
+namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.0.1")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.0.2")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
-    public class CustomItemPlugin : BaseUnityPlugin
+    public class Her_Burden : BaseUnityPlugin
     {
         private static ItemDef myItemDef;
         public static ItemIndex itemIndex;
-
+        internal Her_Burden() { }
+        internal static BepInEx.Logging.ManualLogSource log;
         //The Awake() method is run at the very start when the game is initialized.
         public void Awake()
         {
+            log = Logger;
             LanguageAPI.Add("HERBURDEN_NAME", "Her Burden");
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Her_Burden.Resources.herburden"))
             {
@@ -62,6 +64,21 @@ namespace CustomItemPlugin
             };
             WhoKnows();
             On.RoR2.CharacterBody.Update += CharacterBody_Update;
+            On.RoR2.CharacterMaster.OnBodyStart += CharacterMaster_OnBodyStart;
+        }
+
+        private void CharacterMaster_OnBodyStart(On.RoR2.CharacterMaster.orig_OnBodyStart orig, CharacterMaster self, CharacterBody body)
+        {
+            orig(self, body);
+            if (self.playerCharacterMasterController)
+            {
+                Chat.AddMessage("Test");
+                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(myItemDef.itemIndex) > 0)
+                {
+                    body.gameObject.AddComponent<BodySizeScript>();
+                    body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
+                }
+            }
         }
 
         //This hook just updates the stack count
@@ -74,9 +91,8 @@ namespace CustomItemPlugin
             }
         }
 
-        public static void WhoKnows()
+        public  void WhoKnows()
         {
-
             IL.RoR2.CharacterBody.RecalculateStats += (il) =>
             {
                 ILCursor c = new ILCursor(il);
@@ -102,8 +118,12 @@ namespace CustomItemPlugin
                         c.Emit(OpCodes.Ldarg_0);
                         c.EmitDelegate<Func<CharacterBody, bool>>((cb) =>
                         {
-                            int items = cb.master.inventory.GetItemCount(myItemDef.itemIndex);
-                            if (items > 0) return true;
+                            if (cb.master && cb.master.inventory)
+                            {
+                                int items = cb.master.inventory.GetItemCount(myItemDef.itemIndex);
+                                if (items > 0) return true;
+                                return false;
+                            }
                             return false;
                         });
                         c.Emit(OpCodes.Brfalse, dioend);
@@ -119,7 +139,7 @@ namespace CustomItemPlugin
                         c.EmitDelegate<Func<CharacterBody, float>>((cb) =>
                         {
                             float speedmultiplier = 1;
-                            if (cb.master.inventory)
+                            if (cb.master && cb.master.inventory)
                             {
                                 int itemCount = cb.master.inventory.GetItemCount(myItemDef.itemIndex);
                                 if (itemCount > 0)
@@ -143,7 +163,7 @@ namespace CustomItemPlugin
                         c.EmitDelegate<Func<CharacterBody, float>>((cb) =>
                         {
                             float healthmultiplier = 1;
-                            if (cb.master.inventory)
+                            if (cb.master && cb.master.inventory)
                             {
                                 int itemCount = cb.master.inventory.GetItemCount(myItemDef.itemIndex);
                                 if (itemCount > 0)
@@ -155,12 +175,12 @@ namespace CustomItemPlugin
                         });
                         c.Emit(OpCodes.Mul);
                         c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("set_maxHealth", BindingFlags.Instance | BindingFlags.NonPublic));
-
+                        
                         c.MarkLabel(dioend); // end label
                     }
 
                 }
-                catch (Exception ex) { Debug.LogError(ex); }
+                catch (Exception ex) { base.Logger.LogError(ex); }
             };
         }
         private void AddTokens()
@@ -168,7 +188,7 @@ namespace CustomItemPlugin
             //AssetPlus is deprecated, so I switched it to use the current LanguageAPI
             LanguageAPI.Add("HERBURDEN_NAME", "Her Burden");
             LanguageAPI.Add("HERBURDEN_PICKUP", "Increase HP and decrease move speed.\nAll item drops are now:<color=#307FFF>Her Burden</color>");
-            LanguageAPI.Add("HERBURDEN_DESC", "Increase HP and decrease move speed.\nAll item drops are now:<color=#307FFF>Her Burden</color> (Plus Numbers)");
+            LanguageAPI.Add("HERBURDEN_DESC", "Increase HP by 5% and decrease move speed by 2.5%.\nAll item drops are now:<color=#307FFF>Her Burden</color>");
             LanguageAPI.Add("HERBURDEN_LORE", "None");
 
         }
