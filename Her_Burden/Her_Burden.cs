@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using R2API;
@@ -13,19 +14,30 @@ namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.0.3")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.1.0")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
+
     public class Her_Burden : BaseUnityPlugin
     {
         private static ItemDef myItemDef;
         public static ItemIndex itemIndex;
+        public static ConfigEntry<int> Hbcpu { get; set; }
+        public static ConfigEntry<float> Hbims { get; set; }
+        public static ConfigEntry<float> Hbimssm { get; set; }
+        public static ConfigEntry<float> Hbspeed { get; set; }
+        public static ConfigEntry<float> Hbhealth { get; set; }
         internal Her_Burden() { }
         internal static BepInEx.Logging.ManualLogSource log;
         //The Awake() method is run at the very start when the game is initialized.
         public void Awake()
         {
             log = Logger;
+            Hbcpu = Config.Bind<int>("Pickup", "Chance to pickup Her Burden", 100, "Chance to change the pickup to Her Burden once you have one");
+            Hbims = Config.Bind<float>("Max Item Size", "Max size of the item", 2, "Changes the max size of the item on the Survivor");
+            Hbimssm = Config.Bind<float>("Item Size Multiplier", "Size Multipler for the item", 0.049375f, "Changes the rate that the item size increases by");
+            Hbspeed = Config.Bind<float>("Speed Mutliplier", "For Her Burden", 1.05f, "Changes the increase of max health per item exponentially");
+            Hbhealth = Config.Bind<float>("Health Multiplier", "For Her Burden", 0.975f, "Changes the decrease of speed per item exponentially");
             LanguageAPI.Add("HERBURDEN_NAME", "Her Burden");
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Her_Burden.Resources.herburden"))
             {
@@ -51,7 +63,7 @@ namespace Her_Burden
 
             On.RoR2.GenericPickupController.GrantItem += (orig, self, body, inventory) =>
             {
-                if (body.inventory.GetItemCount(myItemDef.itemIndex) > 0)
+                if (body.inventory.GetItemCount(myItemDef.itemIndex) > 0 && Util.CheckRoll(Hbcpu.Value, body.master))
                     self.pickupIndex = PickupCatalog.FindPickupIndex(myItemDef.itemIndex);
                 orig(self, body, inventory);
 
@@ -72,7 +84,6 @@ namespace Her_Burden
             orig(self, body);
             if (self.playerCharacterMasterController)
             {
-                Chat.AddMessage("Test");
                 if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(myItemDef.itemIndex) > 0)
                 {
                     body.gameObject.AddComponent<BodySizeScript>();
@@ -144,7 +155,7 @@ namespace Her_Burden
                                 int itemCount = cb.master.inventory.GetItemCount(myItemDef.itemIndex);
                                 if (itemCount > 0)
                                 {
-                                    speedmultiplier *= Mathf.Pow(0.975f, itemCount);
+                                    speedmultiplier *= Mathf.Pow(Hbspeed.Value, itemCount);
                                 }
                             }
                             return speedmultiplier;
@@ -168,7 +179,7 @@ namespace Her_Burden
                                 int itemCount = cb.master.inventory.GetItemCount(myItemDef.itemIndex);
                                 if (itemCount > 0)
                                 {
-                                    healthmultiplier *= Mathf.Pow(1.05f, itemCount);
+                                    healthmultiplier *= Mathf.Pow(Hbhealth.Value, itemCount);
                                 }
                             }
                             return healthmultiplier;
