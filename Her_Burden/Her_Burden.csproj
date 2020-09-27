@@ -35,6 +35,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Her_Burden.cs" />
+    <None Include="Items\HerBurdenItem6.cs" />
+    <None Include="Items\HerBurdenItem5.cs" />
+    <None Include="Items\HerBurdenItem4.cs" />
+    <None Include="Items\HerBurdenItem3.cs" />
+    <None Include="Items\HerBurdenItem2.cs" />
+    <Compile Include="Items\HerBurdenItem.cs" />
     <Compile Include="SizeScripts\BodySizeScript.cs" />
     <Compile Include="SizeScripts\PrefabSizeScript.cs" />
     <Compile Include="SizeScripts\SizeHandoffManager.cs" />

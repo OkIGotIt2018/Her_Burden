@@ -9,35 +9,47 @@ using System;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
+using Random = System.Random;
+using UnityRandom = UnityEngine.Random;
+using Object = System.Object;
+using UnityObject = UnityEngine.Object;
 
 namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.1.1")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.1.2")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
 
     public class Her_Burden : BaseUnityPlugin
     {
-        private static ItemDef myItemDef;
-        public static ItemIndex itemIndex;
+        public static ItemDef HerBurden;
+        /*public static ItemDef HerBurden2;
+        public static ItemDef HerBurden3;
+        public static ItemDef HerBurden4;
+        public static ItemDef HerBurden5;
+        public static ItemDef HerBurden6;*/
+        public static ConfigEntry<bool> Hbisos { get; set; }
+        public static ConfigEntry<bool> Hbpul { get; set; }
         public static ConfigEntry<int> Hbcpu { get; set; }
         public static ConfigEntry<float> Hbims { get; set; }
         public static ConfigEntry<float> Hbimssm { get; set; }
-        public static ConfigEntry<float> Hbhealth { get; set; }
-        public static ConfigEntry<float> Hbspeed { get; set; }
+        public static ConfigEntry<float> Hbbuff { get; set; }
+        public static ConfigEntry<float> Hbdebuff { get; set; }
         internal Her_Burden() { }
         internal static BepInEx.Logging.ManualLogSource log;
         //The Awake() method is run at the very start when the game is initialized.
         public void Awake()
         {
             log = Logger;
+            Hbisos = Config.Bind<bool>("Her Burden Toggle", "Toggle Item Visibility", true, "Changes if Her Burden shows on the Survivor");
+            Hbpul = Config.Bind<bool>("Her Burden Toggle", "Toggle Luck Effect", false, "Changes if luck effects chance to pickup Her Burden once you have one");
             Hbcpu = Config.Bind<int>("Her Burden Size", "Chance to change pickup to Her Burden", 100, "Chance to change other items to Her Burden on pickup once you have one");
             Hbims = Config.Bind<float>("Her Burden Size", "Max size of the item", 2, "Changes the max size of the item on the Survivor");
             Hbimssm = Config.Bind<float>("Her Burden Size", "Size Multiplier for the item", 0.049375f, "Changes the rate that the item size increases by");
-            Hbhealth = Config.Bind<float>("Her Burden Stats Multiplier", "Max Health", 1.05f, "Changes the increase of max health per item exponentially");
-            Hbspeed = Config.Bind<float>("Her Burden Stats Multiplier", "Move Speed", 0.975f, "Changes the decrease of speed per item exponentially");
+            Hbbuff = Config.Bind<float>("Her Burden Stats Multiplier", "Buff", 1.05f, "Changes the increase of buff of the item per item exponentially");
+            Hbdebuff = Config.Bind<float>("Her Burden Stats Multiplier", "Debuff", 0.975f, "Changes the decrease of debuff of the item per item exponentially");
             LanguageAPI.Add("HERBURDEN_NAME", "Her Burden");
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Her_Burden.Resources.herburden"))
             {
@@ -45,30 +57,77 @@ namespace Her_Burden
                 var provider = new AssetBundleResourcesProvider("@Her_Burden", bundle);
                 ResourcesAPI.AddProvider(provider);
             }
-            myItemDef = new ItemDef
-            {
-                name = "HERBURDEN",
-                nameToken = "HERBURDEN_NAME",
-                pickupToken = "HERBURDEN_PICKUP",
-                descriptionToken = "HERBURDEN_DESC",
-                loreToken = "HERBURDEN_LORE",
-                tier = ItemTier.Lunar,
-                pickupIconPath = "@Her_Burden:Assets/Import/herburdenicon/itemIcon.png",
-                pickupModelPath = "@Her_Burden:Assets/Import/herburden/her_burden.prefab",
-                canRemove = true,
-                hidden = false
-            };
-            AddTokens();
-            AddLocation();
+            HerBurdenItem.Init();
+            /*HerBurdenItem2.Init();
+            HerBurdenItem3.Init();
+            HerBurdenItem4.Init();
+            HerBurdenItem5.Init();
+            HerBurdenItem6.Init();*/
+            //maxHealth-moveSpeed
+            //armor-regen
+            //attackSpeed-maxHealth
+            //moveSpeed-armor
+            //damage-attackSpeed
+            //regen-damage
 
             On.RoR2.GenericPickupController.GrantItem += (orig, self, body, inventory) =>
             {
-                if (body.inventory.GetItemCount(myItemDef.itemIndex) > 0 && Util.CheckRoll(Hbcpu.Value, body.master))
-                    self.pickupIndex = PickupCatalog.FindPickupIndex(myItemDef.itemIndex);
+                /*if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && Util.CheckRoll(Hbcpu.Value, body.master) && Hbpul.Value == true)
+                {
+                    switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
+                    {
+                        case 0:
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden.itemIndex);
+                            break;
+                        case 1:
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden2.itemIndex);
+                            break;
+                        case 2:
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden3.itemIndex);
+                            break;
+                        case 3:
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden4.itemIndex);
+                            break;
+                        case 4:
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden5.itemIndex);
+                            break;
+                        case 5:
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden6.itemIndex);
+                            break;
+                    }
+                }
+                if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && Util.CheckRoll(Hbcpu.Value, body.master) && Hbpul.Value == false)
+                {
+                    switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
+                    {
+                        case 0:
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden.itemIndex);
+                            break;
+                        case 1:
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden2.itemIndex);
+                            break;
+                        case 2:
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden3.itemIndex);
+                            break;
+                        case 3:
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden4.itemIndex);
+                            break;
+                        case 4:
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden5.itemIndex);
+                            break;
+                        case 5:
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden6.itemIndex);
+                            break;
+                    }
+                }*/
+                if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && Util.CheckRoll(Hbcpu.Value, body.master) && Hbpul.Value == true)
+                    self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden.itemIndex);
+                if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && Util.CheckRoll(Hbcpu.Value) && Hbpul.Value == false)
+                    self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden.itemIndex);
                 orig(self, body, inventory);
 
                 //Handle the size change with scripts
-                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(myItemDef.itemIndex) > 0)
+                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && Hbisos.Value == true)
                 {
                     body.gameObject.AddComponent<BodySizeScript>();
                     body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
@@ -84,7 +143,7 @@ namespace Her_Burden
             orig(self, body);
             if (self.playerCharacterMasterController)
             {
-                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(myItemDef.itemIndex) > 0)
+                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && Hbisos.Value == true)
                 {
                     body.gameObject.AddComponent<BodySizeScript>();
                     body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
@@ -96,9 +155,9 @@ namespace Her_Burden
         private void CharacterBody_Update(On.RoR2.CharacterBody.orig_Update orig, CharacterBody self)
         {
             orig(self);
-            if (self.gameObject.GetComponent<BodySizeScript>())
+            if (self.gameObject.GetComponent<BodySizeScript>() && Hbisos.Value == true)
             {
-                self.gameObject.GetComponent<BodySizeScript>().UpdateStacks(self.inventory.GetItemCount(itemIndex));
+                self.gameObject.GetComponent<BodySizeScript>().UpdateStacks(self.inventory.GetItemCount(HerBurden.itemIndex));
             }
         }
 
@@ -131,37 +190,18 @@ namespace Her_Burden
                         {
                             if (cb.master && cb.master.inventory)
                             {
-                                int items = cb.master.inventory.GetItemCount(myItemDef.itemIndex);
-                                if (items > 0) return true;
+                                int items = cb.master.inventory.GetItemCount(HerBurden.itemIndex);
+                                /*int items2 = cb.master.inventory.GetItemCount(HerBurden2.itemIndex);
+                                int items3 = cb.master.inventory.GetItemCount(HerBurden3.itemIndex);
+                                int items4 = cb.master.inventory.GetItemCount(HerBurden4.itemIndex);
+                                int items5 = cb.master.inventory.GetItemCount(HerBurden5.itemIndex);
+                                int items6 = cb.master.inventory.GetItemCount(HerBurden6.itemIndex);*/
+                if (items > 0/* || items2 > 0 || items3 > 0 || items4 > 0 || items5 > 0 || items6 > 0*/) return true;
                                 return false;
                             }
                             return false;
                         });
                         c.Emit(OpCodes.Brfalse, dioend);
-
-                        // this.moveSpeed
-                        c.Emit(OpCodes.Ldarg_0);
-                        c.Emit(OpCodes.Ldarg_0);
-                        c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("get_moveSpeed")); // 1406	0D8A	call	instance float32 RoR2.CharacterBody::get_moveSpeed()
-
-                        // get the inventory count for the item, calculate multiplier, return a float value
-                        // This is essentially `this.MoveSpeed *= multiplier;`
-                        c.Emit(OpCodes.Ldarg_0);
-                        c.EmitDelegate<Func<CharacterBody, float>>((cb) =>
-                        {
-                            float speedmultiplier = 1;
-                            if (cb.master && cb.master.inventory)
-                            {
-                                int itemCount = cb.master.inventory.GetItemCount(myItemDef.itemIndex);
-                                if (itemCount > 0)
-                                {
-                                    speedmultiplier *= Mathf.Pow(Hbspeed.Value, itemCount);
-                                }
-                            }
-                            return speedmultiplier;
-                        });
-                        c.Emit(OpCodes.Mul);
-                        c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("set_moveSpeed", BindingFlags.Instance | BindingFlags.NonPublic));
 
                         // this.maxHealth
                         c.Emit(OpCodes.Ldarg_0);
@@ -176,160 +216,173 @@ namespace Her_Burden
                             float healthmultiplier = 1;
                             if (cb.master && cb.master.inventory)
                             {
-                                int itemCount = cb.master.inventory.GetItemCount(myItemDef.itemIndex);
+                                int itemCount = cb.master.inventory.GetItemCount(HerBurden.itemIndex);
                                 if (itemCount > 0)
                                 {
-                                    healthmultiplier *= Mathf.Pow(Hbhealth.Value, itemCount);
+                                    healthmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
+                                /*int itemCount2 = cb.master.inventory.GetItemCount(HerBurden3.itemIndex);
+                                if (itemCount2 > 0)
+                                {
+                                    healthmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
+                                }*/
                             }
                             return healthmultiplier;
                         });
                         c.Emit(OpCodes.Mul);
                         c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("set_maxHealth", BindingFlags.Instance | BindingFlags.NonPublic));
-                        
+
+                        // this.attackSpeed
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("get_attackSpeed")); // 1426 0DC7	call	instance float32 RoR2.CharacterBody::get_attackSpeed()
+
+                        // get the inventory count for the item, calculate multiplier, return a float value
+                        // This is essentially `this.attackSpeed *= multiplier;`
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.EmitDelegate<Func<CharacterBody, float>>((cb) =>
+                        {
+                            float attackSpeedmultiplier = 1;
+                            /*if (cb.master && cb.master.inventory)
+                            {
+                                int itemCount = cb.master.inventory.GetItemCount(HerBurden3.itemIndex);
+                                if (itemCount > 0)
+                                {
+                                    attackSpeedmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
+                                }
+                                int itemCount2 = cb.master.inventory.GetItemCount(HerBurden5.itemIndex);
+                                if (itemCount2 > 0)
+                                {
+                                    attackSpeedmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
+                                }
+                            }*/
+                            return attackSpeedmultiplier;
+                        });
+                        c.Emit(OpCodes.Mul);
+                        c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("set_attackSpeed", BindingFlags.Instance | BindingFlags.NonPublic));
+
+                        // this.moveSpeed
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("get_moveSpeed")); // 1406	0D8A	call	instance float32 RoR2.CharacterBody::get_moveSpeed()
+
+                        // get the inventory count for the item, calculate multiplier, return a float value
+                        // This is essentially `this.moveSpeed *= multiplier;`
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.EmitDelegate<Func<CharacterBody, float>>((cb) =>
+                        {
+                            float moveSpeedmultiplier = 1;
+                            if (cb.master && cb.master.inventory)
+                            {
+                                /*int itemCount = cb.master.inventory.GetItemCount(HerBurden4.itemIndex);
+                                if (itemCount > 0)
+                                {
+                                    moveSpeedmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
+                                }*/
+                                int itemCount2 = cb.master.inventory.GetItemCount(HerBurden.itemIndex);
+                                if (itemCount2 > 0)
+                                {
+                                    moveSpeedmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
+                                }
+                            }
+                            return moveSpeedmultiplier;
+                        });
+                        c.Emit(OpCodes.Mul);
+                        c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("set_moveSpeed", BindingFlags.Instance | BindingFlags.NonPublic));
+
+                        // this.armor
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("get_armor")); // 1438 0DE8	call	instance float32 RoR2.CharacterBody::get_armor()
+
+                        // get the inventory count for the item, calculate multiplier, return a float value
+                        // This is essentially `this.armor *= multiplier;`
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.EmitDelegate<Func<CharacterBody, float>>((cb) =>
+                        {
+                            float armormultiplier = 1;
+                            /*if (cb.master && cb.master.inventory)
+                            {
+                                int itemCount = cb.master.inventory.GetItemCount(HerBurden2.itemIndex);
+                                if (itemCount > 0)
+                                {
+                                    armormultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
+                                }
+                                int itemCount2 = cb.master.inventory.GetItemCount(HerBurden4.itemIndex);
+                                if (itemCount2 > 0)
+                                {
+                                    armormultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
+                                }
+                            }*/
+                            return armormultiplier;
+                        });
+                        c.Emit(OpCodes.Mul);
+                        c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("set_armor", BindingFlags.Instance | BindingFlags.NonPublic));
+
+                        // this.damage
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("get_damage")); // 1444 0DFD	call	instance float32 RoR2.CharacterBody::get_damage()
+
+                        // get the inventory count for the item, calculate multiplier, return a float value
+                        // This is essentially `this.damage *= multiplier;`
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.EmitDelegate<Func<CharacterBody, float>>((cb) =>
+                        {
+                            float damagemultiplier = 1;
+                            /*if (cb.master && cb.master.inventory)
+                            {
+                                int itemCount = cb.master.inventory.GetItemCount(HerBurden5.itemIndex);
+                                if (itemCount > 0)
+                                {
+                                    damagemultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
+                                }
+                                int itemCount2 = cb.master.inventory.GetItemCount(HerBurden6.itemIndex);
+                                if (itemCount2 > 0)
+                                {
+                                    damagemultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
+                                }
+                            }*/
+                            return damagemultiplier;
+                        });
+                        c.Emit(OpCodes.Mul);
+                        c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("set_damage", BindingFlags.Instance | BindingFlags.NonPublic));
+
+                        // this.regen
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("get_regen")); // 1450 0E0F	call	instance float32 RoR2.CharacterBody::get_regen()
+
+                        // get the inventory count for the item, calculate multiplier, return a float value
+                        // This is essentially `this.regen *= multiplier;`
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.EmitDelegate<Func<CharacterBody, float>>((cb) =>
+                        {
+                            float regenmultiplier = 1;
+                            /*if (cb.master && cb.master.inventory)
+                            {
+                                int itemCount = cb.master.inventory.GetItemCount(HerBurden6.itemIndex);
+                                if (itemCount > 0)
+                                {
+                                    regenmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
+                                }
+                                int itemCount2 = cb.master.inventory.GetItemCount(HerBurden2.itemIndex);
+                                if (itemCount2 > 0)
+                                {
+                                    regenmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
+                                }
+                            }*/
+                            return regenmultiplier;
+                        });
+                        c.Emit(OpCodes.Mul);
+                        c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("set_regen", BindingFlags.Instance | BindingFlags.NonPublic));
+
                         c.MarkLabel(dioend); // end label
                     }
 
                 }
                 catch (Exception ex) { base.Logger.LogError(ex); }
             };
-        }
-        private void AddTokens()
-        {
-            //AssetPlus is deprecated, so I switched it to use the current LanguageAPI
-            LanguageAPI.Add("HERBURDEN_NAME", "Her Burden");
-            LanguageAPI.Add("HERBURDEN_PICKUP", "Increase HP and decrease move speed.\nAll item drops are now:<color=#307FFF>Her Burden</color>");
-            LanguageAPI.Add("HERBURDEN_DESC", "Increase HP by 5% and decrease move speed by 2.5%.\nAll item drops are now:<color=#307FFF>Her Burden</color>");
-            LanguageAPI.Add("HERBURDEN_LORE", "None");
-
-        }
-
-        public static void AddLocation()
-        {
-            GameObject followerPrefab = Resources.Load<GameObject>("@Her_Burden:Assets/Import/herburden/her_burden.prefab");
-            followerPrefab.AddComponent<PrefabSizeScript>();
-            Vector3 generalScale = new Vector3(.0125f, .0125f, .0125f);
-            ItemDisplayRuleDict rules = new ItemDisplayRuleDict(new ItemDisplayRule[]
-            {
-                new ItemDisplayRule
-                {
-                    ruleType = ItemDisplayRuleType.ParentedPrefab,
-                    followerPrefab = followerPrefab,
-                    childName = "Pelvis",
-                    localPos = new Vector3(0f, 0.1f, 0.1f),
-                    localAngles = new Vector3(180f, -0.05f, 0f),
-                    localScale = generalScale
-                }
-            });
-            rules.Add("mdlHuntress", new ItemDisplayRule[]
-            {
-                new ItemDisplayRule
-                {
-                    ruleType = ItemDisplayRuleType.ParentedPrefab,
-                    followerPrefab = followerPrefab,
-                    childName = "Pelvis",
-                    localPos = new Vector3(0f, 0.1f, 0.1f),
-                    localAngles = new Vector3(180f, -0.05f, 0f),
-                    localScale = generalScale
-                }
-            });
-            rules.Add("mdlToolbot", new ItemDisplayRule[]
-            {
-                new ItemDisplayRule
-                {
-                    ruleType = ItemDisplayRuleType.ParentedPrefab,
-                    followerPrefab = followerPrefab,
-                    childName = "LowerArmR",
-                    localPos = new Vector3(0f, 5.5f, 0f),
-                    localAngles = new Vector3(45f, -90f, 0f),
-                    localScale = generalScale * 10
-                }
-            });
-            rules.Add("mdlEngi", new ItemDisplayRule[]
-            {
-                new ItemDisplayRule
-                {
-                    ruleType = ItemDisplayRuleType.ParentedPrefab,
-                    followerPrefab = followerPrefab,
-                    childName = "Pelvis",
-                    localPos = new Vector3(0f, 0.1f, 0.1f),
-                    localAngles = new Vector3(180f, -0.05f, 0f),
-                    localScale = generalScale
-                }
-            });
-            rules.Add("mdlMage", new ItemDisplayRule[]
-            {
-                new ItemDisplayRule
-                {
-                    ruleType = ItemDisplayRuleType.ParentedPrefab,
-                    followerPrefab = followerPrefab,
-                    childName = "Pelvis",
-                    localPos = new Vector3(0f, 0.1f, 0.1f),
-                    localAngles = new Vector3(180f, -0.05f, 0f),
-                    localScale = generalScale
-                }
-            });
-            rules.Add("mdlMerc", new ItemDisplayRule[]
-            {
-                new ItemDisplayRule
-                {
-                    ruleType = ItemDisplayRuleType.ParentedPrefab,
-                    followerPrefab = followerPrefab,
-                    childName = "Pelvis",
-                    localPos = new Vector3(0f, 0.25f, 0.05f),
-                    localAngles = new Vector3(180f, -0.05f, 0f),
-                    localScale = generalScale
-                }
-            });
-            rules.Add("mdlTreebot", new ItemDisplayRule[]
-            {
-                new ItemDisplayRule
-                {
-                    ruleType = ItemDisplayRuleType.ParentedPrefab,
-                    followerPrefab = followerPrefab,
-                    childName = "WeaponPlatform",
-                    localPos = new Vector3(0.2f, 0.05f, 0.2f),
-                    localAngles = new Vector3(-45f, 0f, 0f),
-                    localScale = generalScale * 2
-                }
-            });
-            rules.Add("mdlLoader", new ItemDisplayRule[]
-            {
-                new ItemDisplayRule
-                {
-                    ruleType = ItemDisplayRuleType.ParentedPrefab,
-                    followerPrefab = followerPrefab,
-                    childName = "Pelvis",
-                    localPos = new Vector3(0f, 0.2f, 0.2f),
-                    localAngles = new Vector3(180f, -0.05f, 0f),
-                    localScale = generalScale
-                }
-            });
-            rules.Add("mdlCroco", new ItemDisplayRule[]
-            {
-                new ItemDisplayRule
-                {
-                    ruleType = ItemDisplayRuleType.ParentedPrefab,
-                    followerPrefab = followerPrefab,
-                    childName = "Hip",
-                    localPos = new Vector3(0f, 3.5f, 0f),
-                    localAngles = new Vector3(135f, -0.05f, 0f),
-                    localScale = generalScale * 10
-                }
-            });
-            rules.Add("mdlCaptain", new ItemDisplayRule[]
-            {
-                new ItemDisplayRule
-                {
-                    ruleType = ItemDisplayRuleType.ParentedPrefab,
-                    followerPrefab = followerPrefab,
-                    childName = "Pelvis",
-                    localPos = new Vector3(0f, 0.1f, 0.1f),
-                    localAngles = new Vector3(180f, -0.05f, 0f),
-                    localScale = generalScale
-                }
-            });
-            itemIndex = ItemAPI.Add(new CustomItem(myItemDef, rules));
         }
     }
 }
