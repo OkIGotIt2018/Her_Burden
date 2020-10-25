@@ -24,7 +24,7 @@ namespace Her_Burden
                 descriptionToken = "HERBURDEN_DESC",
                 loreToken = "HERBURDEN_LORE",
                 tier = ItemTier.Lunar,
-                pickupIconPath = "@Her_Burden:Assets/Import/herburdenicon/itemIcon.png",
+                pickupIconPath = "@Her_Burden:Assets/Import/herburdenicon/"+Hbiiv.Value+"ItemIcon.png",
                 pickupModelPath = "@Her_Burden:Assets/Import/herburden/her_burden.prefab",
                 canRemove = true,
                 hidden = false

@@ -18,7 +18,7 @@ namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.1.2")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.1.3")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
 
@@ -32,6 +32,7 @@ namespace Her_Burden
         public static ItemDef HerBurden6;*/
         public static ConfigEntry<bool> Hbisos { get; set; }
         public static ConfigEntry<bool> Hbpul { get; set; }
+        public static ConfigEntry<string> Hbiiv { get; set; }
         public static ConfigEntry<int> Hbcpu { get; set; }
         public static ConfigEntry<float> Hbims { get; set; }
         public static ConfigEntry<float> Hbimssm { get; set; }
@@ -45,6 +46,7 @@ namespace Her_Burden
             log = Logger;
             Hbisos = Config.Bind<bool>("Her Burden Toggle", "Toggle Item Visibility", true, "Changes if Her Burden shows on the Survivor");
             Hbpul = Config.Bind<bool>("Her Burden Toggle", "Toggle Luck Effect", false, "Changes if luck effects chance to pickup Her Burden once you have one");
+            Hbiiv = Config.Bind<string>("Her Burden Icon", "Item Icon Version", "Hush", "Decides what item icon to use, \"Hush\" or \"aka6\".");
             Hbcpu = Config.Bind<int>("Her Burden Size", "Chance to change pickup to Her Burden", 100, "Chance to change other items to Her Burden on pickup once you have one");
             Hbims = Config.Bind<float>("Her Burden Size", "Max size of the item", 2, "Changes the max size of the item on the Survivor");
             Hbimssm = Config.Bind<float>("Her Burden Size", "Size Multiplier for the item", 0.049375f, "Changes the rate that the item size increases by");
