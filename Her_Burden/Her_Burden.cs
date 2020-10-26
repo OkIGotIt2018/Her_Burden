@@ -20,7 +20,7 @@ namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.2.0")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.2.1")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
 
@@ -77,6 +77,20 @@ namespace Her_Burden
 
             On.RoR2.GenericPickupController.GrantItem += (orig, self, body, inventory) =>
             {
+                bool changepickup = false;
+                List<ItemIndex> items = new List<ItemIndex>();
+                if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0)
+                    changepickup = true;
+                if (body.inventory.GetItemCount(HerRecluse.itemIndex) > 0)
+                    changepickup = true;
+                if (body.inventory.GetItemCount(HerFury.itemIndex) > 0)
+                    changepickup = true;
+                if (body.inventory.GetItemCount(HerTorpor.itemIndex) > 0)
+                    changepickup = true;
+                if (body.inventory.GetItemCount(HerRancor.itemIndex) > 0)
+                    changepickup = true;
+                if (body.inventory.GetItemCount(HerPanic.itemIndex) > 0)
+                    changepickup = true;
                 bool blacklist = false;
                 if (self.pickupIndex == PickupCatalog.FindPickupIndex(HerBurden.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerRecluse.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerFury.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerTorpor.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerRancor.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerPanic.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapWhite) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapGreen) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapRed) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapYellow))
                     blacklist = true;
@@ -90,9 +104,9 @@ namespace Her_Burden
                 else
                     CheckRollTrue = Util.CheckRoll(Hbcpu.Value);
 
-                if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && CheckRollTrue == true && blacklist == false && Hbgoi.Value == true)
+                if (changepickup == true && CheckRollTrue == true && blacklist == false && Hbgoi.Value == true)
                     orig(self, body, inventory);
-                if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && CheckRollTrue == true && blacklist == false)
+                if (changepickup == true && CheckRollTrue == true && blacklist == false)
                 {
                     switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
                     {
@@ -135,11 +149,25 @@ namespace Her_Burden
         private Interactability PurchaseInteraction_GetInteractability(On.RoR2.PurchaseInteraction.orig_GetInteractability orig, PurchaseInteraction self, Interactor activator)
         {
             CharacterBody buddy = activator.GetComponent<CharacterBody>();
+            bool disablecleanse = false;
+            List<ItemIndex> items = new List<ItemIndex>();
+            if (buddy.inventory.GetItemCount(HerBurden.itemIndex) > 0)
+                disablecleanse = true;
+            if (buddy.inventory.GetItemCount(HerRecluse.itemIndex) > 0)
+                disablecleanse = true;
+            if (buddy.inventory.GetItemCount(HerFury.itemIndex) > 0)
+                disablecleanse = true;
+            if (buddy.inventory.GetItemCount(HerTorpor.itemIndex) > 0)
+                disablecleanse = true;
+            if (buddy.inventory.GetItemCount(HerRancor.itemIndex) > 0)
+                disablecleanse = true;
+            if (buddy.inventory.GetItemCount(HerPanic.itemIndex) > 0)
+                disablecleanse = true;
             if (self.costType == CostTypeIndex.LunarItemOrEquipment)
             {
                 if (self.displayNameToken.ToLower() == "shrine_cleanse_name")
                 {
-                    if (buddy && buddy.inventory && buddy.inventory.GetItemCount(HerBurden.itemIndex) > 0)
+                    if (buddy && buddy.inventory && disablecleanse == true)
                     {
                         Chat.AddMessage("Test");
                         return Interactability.Disabled;
@@ -154,7 +182,7 @@ namespace Her_Burden
             var body = PlayerCharacterMasterController.instances[0].master.GetBody();
             int itemcount = 0;
             List<ItemIndex> items = new List<ItemIndex>();
-            if (body.inventory.GetItemCount(HerBurden.itemIndex) > 1)
+            if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0)
                 items.Add(HerBurden.itemIndex);
             if (body.inventory.GetItemCount(HerRecluse.itemIndex) > 0)
                 items.Add(HerRecluse.itemIndex);
