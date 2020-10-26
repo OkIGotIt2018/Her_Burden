@@ -24,8 +24,8 @@ namespace Her_Burden
                 descriptionToken = "HERBURDEN_DESC",
                 loreToken = "HERBURDEN_LORE",
                 tier = ItemTier.Lunar,
-                pickupIconPath = "@Her_Burden:Assets/Import/herburdenicon/"+Hbiiv.Value+"ItemIcon.png",
-                pickupModelPath = "@Her_Burden:Assets/Import/herburden/her_burden.prefab",
+                pickupIconPath = "@Her_Burden:Assets/Import/herburdenicon/" + Hbiiv.Value + "ItemIcon.png",
+                pickupModelPath = "@Her_Burden:Assets/Import/herburden/" + Hbiiv.Value + "her_burden.prefab",
                 canRemove = true,
                 hidden = false
             };
@@ -36,8 +36,8 @@ namespace Her_Burden
         {
             //AssetPlus is deprecated, so I switched it to use the current LanguageAPI
             LanguageAPI.Add("HERBURDEN_NAME", "Her Burden");
-            LanguageAPI.Add("HERBURDEN_PICKUP", "Increase HP and decrease move speed.\nAll item drops are now:<color=#307FFF>Her Burden</color>");
-            LanguageAPI.Add("HERBURDEN_DESC", "Increase HP by 5% and decrease move speed by 2.5%.\nAll item drops are now:<color=#307FFF>Her Burden</color>");
+            LanguageAPI.Add("HERBURDEN_PICKUP", "Increase HP and decrease move speed.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>");
+            LanguageAPI.Add("HERBURDEN_DESC", "Increase HP by 5% and decrease move speed by 2.5%.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>");
             LanguageAPI.Add("HERBURDEN_LORE", "None");
 
         }
@@ -45,7 +45,7 @@ namespace Her_Burden
         {
             if (Hbisos.Value == true)
             {
-                GameObject followerPrefab = Resources.Load<GameObject>("@Her_Burden:Assets/Import/herburden/her_burden.prefab");
+                GameObject followerPrefab = Resources.Load<GameObject>("@Her_Burden:Assets/Import/herburden/" + Hbiiv.Value + "her_burden.prefab");
                 followerPrefab.AddComponent<PrefabSizeScript>();
                 Vector3 generalScale = new Vector3(.0125f, .0125f, .0125f);
                 ItemDisplayRuleDict rules = new ItemDisplayRuleDict(new ItemDisplayRule[]

@@ -13,45 +13,46 @@ using Random = System.Random;
 using UnityRandom = UnityEngine.Random;
 using Object = System.Object;
 using UnityObject = UnityEngine.Object;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.1.3")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.2.0")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
 
     public class Her_Burden : BaseUnityPlugin
     {
         public static ItemDef HerBurden;
-        /*public static ItemDef HerBurden2;
-        public static ItemDef HerBurden3;
-        public static ItemDef HerBurden4;
-        public static ItemDef HerBurden5;
-        public static ItemDef HerBurden6;*/
+        public static ItemDef HerRecluse;
+        public static ItemDef HerFury;
+        public static ItemDef HerTorpor;
+        public static ItemDef HerRancor;
+        public static ItemDef HerPanic;
         public static ConfigEntry<bool> Hbisos { get; set; }
         public static ConfigEntry<bool> Hbpul { get; set; }
+        public static ConfigEntry<bool> Hbgoi { get; set; }
         public static ConfigEntry<string> Hbiiv { get; set; }
-        public static ConfigEntry<int> Hbcpu { get; set; }
         public static ConfigEntry<float> Hbims { get; set; }
         public static ConfigEntry<float> Hbimssm { get; set; }
+        public static ConfigEntry<int> Hbcpu { get; set; }
         public static ConfigEntry<float> Hbbuff { get; set; }
         public static ConfigEntry<float> Hbdebuff { get; set; }
-        internal Her_Burden() { }
-        internal static BepInEx.Logging.ManualLogSource log;
         //The Awake() method is run at the very start when the game is initialized.
         public void Awake()
         {
-            log = Logger;
             Hbisos = Config.Bind<bool>("Her Burden Toggle", "Toggle Item Visibility", true, "Changes if Her Burden shows on the Survivor");
             Hbpul = Config.Bind<bool>("Her Burden Toggle", "Toggle Luck Effect", false, "Changes if luck effects chance to pickup Her Burden once you have one");
-            Hbiiv = Config.Bind<string>("Her Burden Icon", "Item Icon Version", "Hush", "Decides what item icon to use, \"Hush\" or \"aka6\".");
-            Hbcpu = Config.Bind<int>("Her Burden Size", "Chance to change pickup to Her Burden", 100, "Chance to change other items to Her Burden on pickup once you have one");
+            Hbgoi = Config.Bind<bool>("Her Burden Toggle", "Toggle Give Original Item", false, "Changes if you also get the original item along with Her Burden");
+            Hbiiv = Config.Bind<string>("Her Burden General", "Artist", "Hush", "Decides what artist to use, \"Hush\" or \"aka6\".");
             Hbims = Config.Bind<float>("Her Burden Size", "Max size of the item", 2, "Changes the max size of the item on the Survivor");
             Hbimssm = Config.Bind<float>("Her Burden Size", "Size Multiplier for the item", 0.049375f, "Changes the rate that the item size increases by");
-            Hbbuff = Config.Bind<float>("Her Burden Stats Multiplier", "Buff", 1.05f, "Changes the increase of buff of the item per item exponentially");
-            Hbdebuff = Config.Bind<float>("Her Burden Stats Multiplier", "Debuff", 0.975f, "Changes the decrease of debuff of the item per item exponentially");
+            Hbcpu = Config.Bind<int>("Her Burden Mechanics", "Chance to change pickup to Her Burden", 100, "Chance to change other items to Her Burden on pickup once you have one");
+            Hbbuff = Config.Bind<float>("Her Burden Mechanics", "Buff", 1.05f, "Changes the increase of buff of the item per item exponentially");
+            Hbdebuff = Config.Bind<float>("Her Burden Mechanics", "Debuff", 0.975f, "Changes the decrease of debuff of the item per item exponentially");
             LanguageAPI.Add("HERBURDEN_NAME", "Her Burden");
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Her_Burden.Resources.herburden"))
             {
@@ -60,21 +61,38 @@ namespace Her_Burden
                 ResourcesAPI.AddProvider(provider);
             }
             HerBurdenItem.Init();
-            /*HerBurdenItem2.Init();
-            HerBurdenItem3.Init();
-            HerBurdenItem4.Init();
-            HerBurdenItem5.Init();
-            HerBurdenItem6.Init();*/
-            //maxHealth-moveSpeed
-            //armor-regen
-            //attackSpeed-maxHealth
-            //moveSpeed-armor
-            //damage-attackSpeed
-            //regen-damage
+            HerRecluseItem.Init();
+            HerFuryItem.Init();
+            HerTorporItem.Init();
+            HerRancorItem.Init();
+            HerPanicItem.Init(); 
+
+
+            //maxHealth-moveSpeed   Her Burden
+            //armor-regen           Her Recluse
+            //attackSpeed-maxHealth Her Fury
+            //regen-attackSpeed     Her Torpor
+            //damage-armor          Her Rancor
+            //moveSpeed-damage      Her Panic
 
             On.RoR2.GenericPickupController.GrantItem += (orig, self, body, inventory) =>
             {
-                /*if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && Util.CheckRoll(Hbcpu.Value, body.master) && Hbpul.Value == true)
+                bool blacklist = false;
+                if (self.pickupIndex == PickupCatalog.FindPickupIndex(HerBurden.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerRecluse.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerFury.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerTorpor.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerRancor.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerPanic.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapWhite) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapGreen) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapRed) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapYellow))
+                    blacklist = true;
+                if (blacklist == false && Hbgoi.Value == true)
+                    if (self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.Pearl) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ShinyPearl))
+                        blacklist = true;
+
+                bool CheckRollTrue;
+                if (Hbpul.Value == true)
+                    CheckRollTrue = Util.CheckRoll(Hbcpu.Value, body.master);
+                else
+                    CheckRollTrue = Util.CheckRoll(Hbcpu.Value);
+
+                if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && CheckRollTrue == true && blacklist == false && Hbgoi.Value == true)
+                    orig(self, body, inventory);
+                if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && CheckRollTrue == true && blacklist == false)
                 {
                     switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
                     {
@@ -82,50 +100,22 @@ namespace Her_Burden
                             self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden.itemIndex);
                             break;
                         case 1:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden2.itemIndex);
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerRecluse.itemIndex);
                             break;
                         case 2:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden3.itemIndex);
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerFury.itemIndex);
                             break;
                         case 3:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden4.itemIndex);
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerTorpor.itemIndex);
                             break;
                         case 4:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden5.itemIndex);
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerRancor.itemIndex);
                             break;
                         case 5:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden6.itemIndex);
+                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerPanic.itemIndex);
                             break;
                     }
                 }
-                if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && Util.CheckRoll(Hbcpu.Value, body.master) && Hbpul.Value == false)
-                {
-                    switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
-                    {
-                        case 0:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden.itemIndex);
-                            break;
-                        case 1:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden2.itemIndex);
-                            break;
-                        case 2:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden3.itemIndex);
-                            break;
-                        case 3:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden4.itemIndex);
-                            break;
-                        case 4:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden5.itemIndex);
-                            break;
-                        case 5:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden6.itemIndex);
-                            break;
-                    }
-                }*/
-                if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && Util.CheckRoll(Hbcpu.Value, body.master) && Hbpul.Value == true)
-                    self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden.itemIndex);
-                if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && Util.CheckRoll(Hbcpu.Value) && Hbpul.Value == false)
-                    self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden.itemIndex);
                 orig(self, body, inventory);
 
                 //Handle the size change with scripts
@@ -138,6 +128,73 @@ namespace Her_Burden
             WhoKnows();
             On.RoR2.CharacterBody.Update += CharacterBody_Update;
             On.RoR2.CharacterMaster.OnBodyStart += CharacterMaster_OnBodyStart;
+            On.EntityStates.Duplicator.Duplicating.OnEnter += Duplicating_OnEnter;
+            On.RoR2.PurchaseInteraction.GetInteractability += PurchaseInteraction_GetInteractability;
+        }
+
+        private Interactability PurchaseInteraction_GetInteractability(On.RoR2.PurchaseInteraction.orig_GetInteractability orig, PurchaseInteraction self, Interactor activator)
+        {
+            CharacterBody buddy = activator.GetComponent<CharacterBody>();
+            if (self.costType == CostTypeIndex.LunarItemOrEquipment)
+            {
+                if (self.displayNameToken.ToLower() == "shrine_cleanse_name")
+                {
+                    if (buddy && buddy.inventory && buddy.inventory.GetItemCount(HerBurden.itemIndex) > 0)
+                    {
+                        Chat.AddMessage("Test");
+                        return Interactability.Disabled;
+                    }
+                }
+            }
+            return orig(self, activator);
+        }
+
+        private void Duplicating_OnEnter(On.EntityStates.Duplicator.Duplicating.orig_OnEnter orig, EntityStates.Duplicator.Duplicating self)
+        {
+            var body = PlayerCharacterMasterController.instances[0].master.GetBody();
+            int itemcount = 0;
+            List<ItemIndex> items = new List<ItemIndex>();
+            if (body.inventory.GetItemCount(HerBurden.itemIndex) > 1)
+                items.Add(HerBurden.itemIndex);
+            if (body.inventory.GetItemCount(HerRecluse.itemIndex) > 0)
+                items.Add(HerRecluse.itemIndex);
+            if (body.inventory.GetItemCount(HerFury.itemIndex) > 0)
+                items.Add(HerFury.itemIndex);
+            if (body.inventory.GetItemCount(HerTorpor.itemIndex) > 0)
+                items.Add(HerTorpor.itemIndex);
+            if (body.inventory.GetItemCount(HerRancor.itemIndex) > 0)
+                items.Add(HerRancor.itemIndex);
+            if (body.inventory.GetItemCount(HerPanic.itemIndex) > 0)
+                items.Add(HerPanic.itemIndex);
+            for (int i = 0; i < items.Count; i++)
+            {
+                itemcount += body.inventory.GetItemCount(items[i]);
+            }
+            if (itemcount > 1 && Hbgoi.Value == true)
+            {
+                switch (Mathf.FloorToInt(UnityRandom.Range(0, items.Count)))
+                {
+                    case 0:
+                        body.inventory.RemoveItem(items[0], 1);
+                        break;
+                    case 1:
+                        body.inventory.RemoveItem(items[1], 1);
+                        break;
+                    case 2:
+                        body.inventory.RemoveItem(items[2], 1);
+                        break;
+                    case 3:
+                        body.inventory.RemoveItem(items[3], 1);
+                        break;
+                    case 4:
+                        body.inventory.RemoveItem(items[4], 1);
+                        break;
+                    case 5:
+                        body.inventory.RemoveItem(items[5], 1);
+                        break;
+                }
+            }
+            orig(self);
         }
 
         private void CharacterMaster_OnBodyStart(On.RoR2.CharacterMaster.orig_OnBodyStart orig, CharacterMaster self, CharacterBody body)
@@ -193,12 +250,12 @@ namespace Her_Burden
                             if (cb.master && cb.master.inventory)
                             {
                                 int items = cb.master.inventory.GetItemCount(HerBurden.itemIndex);
-                                /*int items2 = cb.master.inventory.GetItemCount(HerBurden2.itemIndex);
-                                int items3 = cb.master.inventory.GetItemCount(HerBurden3.itemIndex);
-                                int items4 = cb.master.inventory.GetItemCount(HerBurden4.itemIndex);
-                                int items5 = cb.master.inventory.GetItemCount(HerBurden5.itemIndex);
-                                int items6 = cb.master.inventory.GetItemCount(HerBurden6.itemIndex);*/
-                if (items > 0/* || items2 > 0 || items3 > 0 || items4 > 0 || items5 > 0 || items6 > 0*/) return true;
+                                int items2 = cb.master.inventory.GetItemCount(HerRecluse.itemIndex);
+                                int items3 = cb.master.inventory.GetItemCount(HerFury.itemIndex);
+                                int items4 = cb.master.inventory.GetItemCount(HerTorpor.itemIndex);
+                                int items5 = cb.master.inventory.GetItemCount(HerRancor.itemIndex);
+                                int items6 = cb.master.inventory.GetItemCount(HerPanic.itemIndex);
+                                if (items > 0 || items2 > 0 || items3 > 0 || items4 > 0 || items5 > 0 || items6 > 0) return true;
                                 return false;
                             }
                             return false;
@@ -223,11 +280,11 @@ namespace Her_Burden
                                 {
                                     healthmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
-                                /*int itemCount2 = cb.master.inventory.GetItemCount(HerBurden3.itemIndex);
+                                int itemCount2 = cb.master.inventory.GetItemCount(HerFury.itemIndex);
                                 if (itemCount2 > 0)
                                 {
                                     healthmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
-                                }*/
+                                }
                             }
                             return healthmultiplier;
                         });
@@ -245,19 +302,19 @@ namespace Her_Burden
                         c.EmitDelegate<Func<CharacterBody, float>>((cb) =>
                         {
                             float attackSpeedmultiplier = 1;
-                            /*if (cb.master && cb.master.inventory)
+                            if (cb.master && cb.master.inventory)
                             {
-                                int itemCount = cb.master.inventory.GetItemCount(HerBurden3.itemIndex);
+                                int itemCount = cb.master.inventory.GetItemCount(HerFury.itemIndex);
                                 if (itemCount > 0)
                                 {
                                     attackSpeedmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
-                                int itemCount2 = cb.master.inventory.GetItemCount(HerBurden5.itemIndex);
+                                int itemCount2 = cb.master.inventory.GetItemCount(HerTorpor.itemIndex);
                                 if (itemCount2 > 0)
                                 {
                                     attackSpeedmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }
-                            }*/
+                            }
                             return attackSpeedmultiplier;
                         });
                         c.Emit(OpCodes.Mul);
@@ -276,11 +333,11 @@ namespace Her_Burden
                             float moveSpeedmultiplier = 1;
                             if (cb.master && cb.master.inventory)
                             {
-                                /*int itemCount = cb.master.inventory.GetItemCount(HerBurden4.itemIndex);
+                                int itemCount = cb.master.inventory.GetItemCount(HerPanic.itemIndex);
                                 if (itemCount > 0)
                                 {
                                     moveSpeedmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
-                                }*/
+                                }
                                 int itemCount2 = cb.master.inventory.GetItemCount(HerBurden.itemIndex);
                                 if (itemCount2 > 0)
                                 {
@@ -303,19 +360,19 @@ namespace Her_Burden
                         c.EmitDelegate<Func<CharacterBody, float>>((cb) =>
                         {
                             float armormultiplier = 1;
-                            /*if (cb.master && cb.master.inventory)
+                            if (cb.master && cb.master.inventory)
                             {
-                                int itemCount = cb.master.inventory.GetItemCount(HerBurden2.itemIndex);
+                                int itemCount = cb.master.inventory.GetItemCount(HerRecluse.itemIndex);
                                 if (itemCount > 0)
                                 {
                                     armormultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
-                                int itemCount2 = cb.master.inventory.GetItemCount(HerBurden4.itemIndex);
+                                int itemCount2 = cb.master.inventory.GetItemCount(HerRancor.itemIndex);
                                 if (itemCount2 > 0)
                                 {
                                     armormultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }
-                            }*/
+                            }
                             return armormultiplier;
                         });
                         c.Emit(OpCodes.Mul);
@@ -332,19 +389,19 @@ namespace Her_Burden
                         c.EmitDelegate<Func<CharacterBody, float>>((cb) =>
                         {
                             float damagemultiplier = 1;
-                            /*if (cb.master && cb.master.inventory)
+                            if (cb.master && cb.master.inventory)
                             {
-                                int itemCount = cb.master.inventory.GetItemCount(HerBurden5.itemIndex);
+                                int itemCount = cb.master.inventory.GetItemCount(HerRancor.itemIndex);
                                 if (itemCount > 0)
                                 {
                                     damagemultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
-                                int itemCount2 = cb.master.inventory.GetItemCount(HerBurden6.itemIndex);
+                                int itemCount2 = cb.master.inventory.GetItemCount(HerPanic.itemIndex);
                                 if (itemCount2 > 0)
                                 {
                                     damagemultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }
-                            }*/
+                            }
                             return damagemultiplier;
                         });
                         c.Emit(OpCodes.Mul);
@@ -361,19 +418,19 @@ namespace Her_Burden
                         c.EmitDelegate<Func<CharacterBody, float>>((cb) =>
                         {
                             float regenmultiplier = 1;
-                            /*if (cb.master && cb.master.inventory)
+                            if (cb.master && cb.master.inventory)
                             {
-                                int itemCount = cb.master.inventory.GetItemCount(HerBurden6.itemIndex);
+                                int itemCount = cb.master.inventory.GetItemCount(HerTorpor.itemIndex);
                                 if (itemCount > 0)
                                 {
                                     regenmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
-                                int itemCount2 = cb.master.inventory.GetItemCount(HerBurden2.itemIndex);
+                                int itemCount2 = cb.master.inventory.GetItemCount(HerRecluse.itemIndex);
                                 if (itemCount2 > 0)
                                 {
                                     regenmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }
-                            }*/
+                            }
                             return regenmultiplier;
                         });
                         c.Emit(OpCodes.Mul);
