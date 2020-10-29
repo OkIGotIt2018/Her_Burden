@@ -20,7 +20,7 @@ namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.2.1")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.2.2")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
 
@@ -32,10 +32,12 @@ namespace Her_Burden
         public static ItemDef HerTorpor;
         public static ItemDef HerRancor;
         public static ItemDef HerPanic;
+        public static ItemIndex VariantOnSurvivor;
         public static ConfigEntry<bool> Hbisos { get; set; }
         public static ConfigEntry<bool> Hbpul { get; set; }
         public static ConfigEntry<bool> Hbgoi { get; set; }
         public static ConfigEntry<string> Hbiiv { get; set; }
+        public static ConfigEntry<string> Hbvos { get; set; }
         public static ConfigEntry<float> Hbims { get; set; }
         public static ConfigEntry<float> Hbimssm { get; set; }
         public static ConfigEntry<int> Hbcpu { get; set; }
@@ -48,6 +50,7 @@ namespace Her_Burden
             Hbpul = Config.Bind<bool>("Her Burden Toggle", "Toggle Luck Effect", false, "Changes if luck effects chance to pickup Her Burden once you have one");
             Hbgoi = Config.Bind<bool>("Her Burden Toggle", "Toggle Give Original Item", false, "Changes if you also get the original item along with Her Burden");
             Hbiiv = Config.Bind<string>("Her Burden General", "Artist", "Hush", "Decides what artist to use, \"Hush\" or \"aka6\".");
+            Hbvos = Config.Bind<string>("Her Burden General", "Variant Shown on Survivor", "Burden", "Changes what Variant is shown on the Survivor, \"Burden\" \"Recluse\" \"Fury\" \"Torpor\" \"Rancor\" \"Panic\".");
             Hbims = Config.Bind<float>("Her Burden Size", "Max size of the item", 2, "Changes the max size of the item on the Survivor");
             Hbimssm = Config.Bind<float>("Her Burden Size", "Size Multiplier for the item", 0.049375f, "Changes the rate that the item size increases by");
             Hbcpu = Config.Bind<int>("Her Burden Mechanics", "Chance to change pickup to Her Burden", 100, "Chance to change other items to Her Burden on pickup once you have one");
@@ -60,12 +63,18 @@ namespace Her_Burden
                 var provider = new AssetBundleResourcesProvider("@Her_Burden", bundle);
                 ResourcesAPI.AddProvider(provider);
             }
+
+            if (Hbvos.Value != "Burden" && Hbvos.Value != "Recluse" && Hbvos.Value != "Fury" && Hbvos.Value != "Torpor" && Hbvos.Value != "Rancor" && Hbvos.Value != "Panic")
+                Hbvos.Value = "Burden";
+            if (Hbiiv.Value != "Hush" && Hbiiv.Value != "aka6")
+                Hbiiv.Value = "Hush";
+
             HerBurdenItem.Init();
             HerRecluseItem.Init();
             HerFuryItem.Init();
             HerTorporItem.Init();
             HerRancorItem.Init();
-            HerPanicItem.Init(); 
+            HerPanicItem.Init();
 
 
             //maxHealth-moveSpeed   Her Burden
@@ -74,6 +83,19 @@ namespace Her_Burden
             //regen-attackSpeed     Her Torpor
             //damage-armor          Her Rancor
             //moveSpeed-damage      Her Panic
+
+            if (Hbvos.Value == "Burden")
+                VariantOnSurvivor = HerBurden.itemIndex;
+            else if (Hbvos.Value == "Recluse")
+                VariantOnSurvivor = HerRecluse.itemIndex;
+            else if (Hbvos.Value == "Fury")
+                VariantOnSurvivor = HerFury.itemIndex;
+            else if (Hbvos.Value == "Torpor")
+                VariantOnSurvivor = HerTorpor.itemIndex;
+            else if (Hbvos.Value == "Rancor")
+                VariantOnSurvivor = HerRancor.itemIndex;
+            else if (Hbvos.Value == "Panic")
+                VariantOnSurvivor = HerPanic.itemIndex;
 
             On.RoR2.GenericPickupController.GrantItem += (orig, self, body, inventory) =>
             {
@@ -133,7 +155,7 @@ namespace Her_Burden
                 orig(self, body, inventory);
 
                 //Handle the size change with scripts
-                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && Hbisos.Value == true)
+                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true)
                 {
                     body.gameObject.AddComponent<BodySizeScript>();
                     body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
@@ -169,7 +191,6 @@ namespace Her_Burden
                 {
                     if (buddy && buddy.inventory && disablecleanse == true)
                     {
-                        Chat.AddMessage("Test");
                         return Interactability.Disabled;
                     }
                 }
@@ -230,7 +251,7 @@ namespace Her_Burden
             orig(self, body);
             if (self.playerCharacterMasterController)
             {
-                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(HerBurden.itemIndex) > 0 && Hbisos.Value == true)
+                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true)
                 {
                     body.gameObject.AddComponent<BodySizeScript>();
                     body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
@@ -242,9 +263,9 @@ namespace Her_Burden
         private void CharacterBody_Update(On.RoR2.CharacterBody.orig_Update orig, CharacterBody self)
         {
             orig(self);
-            if (self.gameObject.GetComponent<BodySizeScript>() && Hbisos.Value == true)
+            if (self.gameObject.GetComponent<BodySizeScript>() && self.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true)
             {
-                self.gameObject.GetComponent<BodySizeScript>().UpdateStacks(self.inventory.GetItemCount(HerBurden.itemIndex));
+                self.gameObject.GetComponent<BodySizeScript>().UpdateStacks(self.inventory.GetItemCount(VariantOnSurvivor));
             }
         }
 
@@ -377,6 +398,30 @@ namespace Her_Burden
                         c.Emit(OpCodes.Mul);
                         c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("set_moveSpeed", BindingFlags.Instance | BindingFlags.NonPublic));
 
+                        // this.armor2
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("get_armor")); // 1438 0DE8	call	instance float32 RoR2.CharacterBody::get_armor()
+
+                        // get the inventory count for the item, calculate multiplier, return a float value
+                        // This is essentially `this.armor *= multiplier;`
+                        c.Emit(OpCodes.Ldarg_0);
+                        c.EmitDelegate<Func<CharacterBody, float>>((cb) =>
+                        {
+                            float armormultiplier = 0;
+                            if (cb.master && cb.master.inventory)
+                            {
+                                int itemCount = cb.master.inventory.GetItemCount(HerRecluse.itemIndex);
+                                if (itemCount > 0)
+                                {
+                                    armormultiplier += 5;
+                                }
+                            }
+                            return armormultiplier;
+                        });
+                        c.Emit(OpCodes.Add);
+                        c.Emit(OpCodes.Callvirt, typeof(CharacterBody).GetMethod("set_armor", BindingFlags.Instance | BindingFlags.NonPublic));
+
                         // this.armor
                         c.Emit(OpCodes.Ldarg_0);
                         c.Emit(OpCodes.Ldarg_0);
@@ -391,9 +436,9 @@ namespace Her_Burden
                             if (cb.master && cb.master.inventory)
                             {
                                 int itemCount = cb.master.inventory.GetItemCount(HerRecluse.itemIndex);
-                                if (itemCount > 0)
+                                if (itemCount > 1)
                                 {
-                                    armormultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
+                                    armormultiplier *= Mathf.Pow(Hbbuff.Value, itemCount-1);
                                 }
                                 int itemCount2 = cb.master.inventory.GetItemCount(HerRancor.itemIndex);
                                 if (itemCount2 > 0)
