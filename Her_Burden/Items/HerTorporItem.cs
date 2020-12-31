@@ -16,6 +16,9 @@ namespace Her_Burden
     {
         public static void Init()
         {
+            ItemTier Hbtier = ItemTier.Lunar;
+            if (Hbdbt.Value == false)
+                Hbtier = ItemTier.Tier3;
             HerTorpor = new ItemDef
             {
                 name = "HERTORPOR",
@@ -23,7 +26,7 @@ namespace Her_Burden
                 pickupToken = "HERTORPOR_PICKUP",
                 descriptionToken = "HERTORPOR_DESC",
                 loreToken = "HERTORPOR_LORE",
-                tier = ItemTier.Lunar,
+                tier = Hbtier,
                 pickupIconPath = "@Her_Burden:Assets/Import/herburdenicon/HushroyalblueItemIcon.png",
                 pickupModelPath = "@Her_Burden:Assets/Import/herburden/" + Hbiiv.Value + "royalblueher_burden.prefab",
                 canRemove = true,

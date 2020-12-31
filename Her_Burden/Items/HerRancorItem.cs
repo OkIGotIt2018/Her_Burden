@@ -16,6 +16,9 @@ namespace Her_Burden
     {
         public static void Init()
         {
+            ItemTier Hbtier = ItemTier.Lunar;
+            if (Hbdbt.Value == false)
+                Hbtier = ItemTier.Tier3;
             HerRancor = new ItemDef
             {
                 name = "HERRANCOR",
@@ -23,7 +26,7 @@ namespace Her_Burden
                 pickupToken = "HERRANCOR_PICKUP",
                 descriptionToken = "HERRANCOR_DESC",
                 loreToken = "HERRANCOR_LORE",
-                tier = ItemTier.Lunar,
+                tier = Hbtier,
                 pickupIconPath = "@Her_Burden:Assets/Import/herburdenicon/HushorangeItemIcon.png",
                 pickupModelPath = "@Her_Burden:Assets/Import/herburden/" + Hbiiv.Value + "orangeher_burden.prefab",
                 canRemove = true,

@@ -16,6 +16,9 @@ namespace Her_Burden
     {
         public static void Init()
         {
+            ItemTier Hbtier = ItemTier.Lunar;
+            if (Hbdbt.Value == false)
+                Hbtier = ItemTier.Tier3;
             HerPanic = new ItemDef
             {
                 name = "HERPANIC",
@@ -23,7 +26,7 @@ namespace Her_Burden
                 pickupToken = "HERPANIC_PICKUP",
                 descriptionToken = "HERPANIC_DESC",
                 loreToken = "HERPANIC_LORE",
-                tier = ItemTier.Lunar,
+                tier = Hbtier,
                 pickupIconPath = "@Her_Burden:Assets/Import/herburdenicon/HushvioletItemIcon.png",
                 pickupModelPath = "@Her_Burden:Assets/Import/herburden/" + Hbiiv.Value + "violether_burden.prefab",
                 canRemove = true,

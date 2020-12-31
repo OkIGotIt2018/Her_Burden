@@ -20,7 +20,7 @@ namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.2.2")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.2.3")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
 
@@ -36,6 +36,7 @@ namespace Her_Burden
         public static ConfigEntry<bool> Hbisos { get; set; }
         public static ConfigEntry<bool> Hbpul { get; set; }
         public static ConfigEntry<bool> Hbgoi { get; set; }
+        public static ConfigEntry<bool> Hbdbt { get; set; }
         public static ConfigEntry<string> Hbiiv { get; set; }
         public static ConfigEntry<string> Hbvos { get; set; }
         public static ConfigEntry<float> Hbims { get; set; }
@@ -49,6 +50,7 @@ namespace Her_Burden
             Hbisos = Config.Bind<bool>("Her Burden Toggle", "Toggle Item Visibility", true, "Changes if Her Burden shows on the Survivor");
             Hbpul = Config.Bind<bool>("Her Burden Toggle", "Toggle Luck Effect", false, "Changes if luck effects chance to pickup Her Burden once you have one");
             Hbgoi = Config.Bind<bool>("Her Burden Toggle", "Toggle Give Original Item", false, "Changes if you also get the original item along with Her Burden");
+            Hbdbt = Config.Bind<bool>("Her Burden Toggle", "Toggle Debuffs", true, "Changes if debuffes are applied or not");
             Hbiiv = Config.Bind<string>("Her Burden General", "Artist", "Hush", "Decides what artist to use, \"Hush\" or \"aka6\".");
             Hbvos = Config.Bind<string>("Her Burden General", "Variant Shown on Survivor", "Burden", "Changes what Variant is shown on the Survivor, \"Burden\" \"Recluse\" \"Fury\" \"Torpor\" \"Rancor\" \"Panic\".");
             Hbims = Config.Bind<float>("Her Burden Size", "Max size of the item", 2, "Changes the max size of the item on the Survivor");
@@ -100,6 +102,9 @@ namespace Her_Burden
             On.RoR2.GenericPickupController.GrantItem += (orig, self, body, inventory) =>
             {
                 bool changepickup = false;
+                float halve = 1;
+                if (Hbdbt.Value == false && Hbcpu.Value >= 10)
+                    halve = 10;
                 List<ItemIndex> items = new List<ItemIndex>();
                 if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0)
                     changepickup = true;
@@ -122,9 +127,9 @@ namespace Her_Burden
 
                 bool CheckRollTrue;
                 if (Hbpul.Value == true)
-                    CheckRollTrue = Util.CheckRoll(Hbcpu.Value, body.master);
+                    CheckRollTrue = Util.CheckRoll(Hbcpu.Value / halve, body.master);
                 else
-                    CheckRollTrue = Util.CheckRoll(Hbcpu.Value);
+                    CheckRollTrue = Util.CheckRoll(Hbcpu.Value / halve);
 
                 if (changepickup == true && CheckRollTrue == true && blacklist == false && Hbgoi.Value == true)
                     orig(self, body, inventory);
@@ -330,7 +335,7 @@ namespace Her_Burden
                                     healthmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
                                 int itemCount2 = cb.master.inventory.GetItemCount(HerFury.itemIndex);
-                                if (itemCount2 > 0)
+                                if (itemCount2 > 0 && Hbdbt.Value == true)
                                 {
                                     healthmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }
@@ -359,7 +364,7 @@ namespace Her_Burden
                                     attackSpeedmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
                                 int itemCount2 = cb.master.inventory.GetItemCount(HerTorpor.itemIndex);
-                                if (itemCount2 > 0)
+                                if (itemCount2 > 0 && Hbdbt.Value == true)
                                 {
                                     attackSpeedmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }
@@ -388,7 +393,7 @@ namespace Her_Burden
                                     moveSpeedmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
                                 int itemCount2 = cb.master.inventory.GetItemCount(HerBurden.itemIndex);
-                                if (itemCount2 > 0)
+                                if (itemCount2 > 0 && Hbdbt.Value == true)
                                 {
                                     moveSpeedmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }
@@ -441,7 +446,7 @@ namespace Her_Burden
                                     armormultiplier *= Mathf.Pow(Hbbuff.Value, itemCount-1);
                                 }
                                 int itemCount2 = cb.master.inventory.GetItemCount(HerRancor.itemIndex);
-                                if (itemCount2 > 0)
+                                if (itemCount2 > 0 && Hbdbt.Value == true)
                                 {
                                     armormultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }
@@ -470,7 +475,7 @@ namespace Her_Burden
                                     damagemultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
                                 int itemCount2 = cb.master.inventory.GetItemCount(HerPanic.itemIndex);
-                                if (itemCount2 > 0)
+                                if (itemCount2 > 0 && Hbdbt.Value == true)
                                 {
                                     damagemultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }
@@ -499,7 +504,7 @@ namespace Her_Burden
                                     regenmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
                                 int itemCount2 = cb.master.inventory.GetItemCount(HerRecluse.itemIndex);
-                                if (itemCount2 > 0)
+                                if (itemCount2 > 0 && Hbdbt.Value == true)
                                 {
                                     regenmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }

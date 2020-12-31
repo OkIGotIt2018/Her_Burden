@@ -16,6 +16,9 @@ namespace Her_Burden
     {
         public static void Init()
         {
+            ItemTier Hbtier = ItemTier.Lunar;
+            if (Hbdbt.Value == false)
+                Hbtier = ItemTier.Tier3;
             HerRecluse = new ItemDef
             {
                 name = "HERRECLUSE",
@@ -23,7 +26,7 @@ namespace Her_Burden
                 pickupToken = "HERRECLUSE_PICKUP",
                 descriptionToken = "HERRECLUSE_DESC",
                 loreToken = "HERRECLUSE_LORE",
-                tier = ItemTier.Lunar,
+                tier = Hbtier,
                 pickupIconPath = "@Her_Burden:Assets/Import/herburdenicon/HushlightishblueItemIcon.png",
                 pickupModelPath = "@Her_Burden:Assets/Import/herburden/" + Hbiiv.Value + "lightishblueher_burden.prefab",
                 canRemove = true,
