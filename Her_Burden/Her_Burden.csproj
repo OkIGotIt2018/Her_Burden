@@ -35,6 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Her_Burden.cs" />
+    <Compile Include="Items\HerExperimentalEquipment.cs" />
     <Compile Include="Items\HerPanicItem.cs" />
     <Compile Include="Items\HerRancorItem.cs" />
     <Compile Include="Items\HerTorporItem.cs" />
