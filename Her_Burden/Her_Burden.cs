@@ -20,7 +20,7 @@ namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.3.1")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.3.2")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI), nameof(BuffAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
 
@@ -183,7 +183,12 @@ namespace Her_Burden
                 return;
             if (report.attackerBody.inventory.GetItemCount(HerBurden.itemIndex) == 0 && report.attackerBody.inventory.GetItemCount(HerRecluse.itemIndex) == 0 && report.attackerBody.inventory.GetItemCount(HerFury.itemIndex) == 0 && report.attackerBody.inventory.GetItemCount(HerTorpor.itemIndex) == 0 && report.attackerBody.inventory.GetItemCount(HerRancor.itemIndex) == 0 && report.attackerBody.inventory.GetItemCount(HerPanic.itemIndex) == 0)
                 return;
-            if (Util.CheckRoll(Hbedc.Value, report.attackerBody.master) && Hbdbt.Value == false)
+            bool CheckRollTrue;
+            if (Hbpul.Value == true)
+                CheckRollTrue = Util.CheckRoll(Hbcpu.Value, report.attackerBody.master);
+            else
+                CheckRollTrue = Util.CheckRoll(Hbcpu.Value);
+            if (CheckRollTrue && Hbdbt.Value == false)
             {
                 {
                     switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
@@ -230,6 +235,8 @@ namespace Her_Burden
 
         private Interactability PurchaseInteraction_GetInteractability(On.RoR2.PurchaseInteraction.orig_GetInteractability orig, PurchaseInteraction self, Interactor activator)
         {
+            if (Hbdbt.Value == false)
+                return orig(self, activator);
             CharacterBody buddy = activator.GetComponent<CharacterBody>();
             bool disablecleanse = false;
             List<ItemIndex> items = new List<ItemIndex>();
@@ -260,6 +267,11 @@ namespace Her_Burden
 
         private void Duplicating_OnEnter(On.EntityStates.Duplicator.Duplicating.orig_OnEnter orig, EntityStates.Duplicator.Duplicating self)
         {
+            if (Hbdbt.Value == false)
+            {
+                orig(self);
+                return;
+            }
             var body = PlayerCharacterMasterController.instances[0].master.GetBody();
             int itemcount = 0;
             List<ItemIndex> items = new List<ItemIndex>();
@@ -325,6 +337,7 @@ namespace Her_Burden
             orig(self);
             if (self.gameObject.GetComponent<BodySizeScript>() && self.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true)
             {
+                self.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(self.baseNameToken);
                 self.gameObject.GetComponent<BodySizeScript>().UpdateStacks(self.inventory.GetItemCount(VariantOnSurvivor));
             }
         }
@@ -388,7 +401,7 @@ namespace Her_Burden
                                 if (itemCount > 0)
                                 {
                                     if (cb.GetBuffCount(ExperimentalBuff.buffIndex) > 0)
-                                        healthmultiplier *= Mathf.Pow(Hbbuff.Value * 2, itemCount);
+                                        healthmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount) * 2;
                                     else
                                         healthmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
@@ -396,7 +409,7 @@ namespace Her_Burden
                                 if (itemCount2 > 0 && Hbdbt.Value == true)
                                 {
                                     if (cb.GetBuffCount(ExperimentalDeBuff.buffIndex) > 0)
-                                        healthmultiplier *= Mathf.Pow(Hbdebuff.Value / 2, itemCount2);
+                                        healthmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2) / 2;
                                     else
                                         healthmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }
@@ -423,7 +436,7 @@ namespace Her_Burden
                                 if (itemCount > 0)
                                 {
                                     if (cb.GetBuffCount(ExperimentalBuff.buffIndex) > 0)
-                                        attackSpeedmultiplier *= Mathf.Pow(Hbbuff.Value * 2, itemCount);
+                                        attackSpeedmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount) * 2;
                                     else
                                         attackSpeedmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
@@ -431,7 +444,7 @@ namespace Her_Burden
                                 if (itemCount2 > 0 && Hbdbt.Value == true)
                                 {
                                     if (cb.GetBuffCount(ExperimentalDeBuff.buffIndex) > 0)
-                                        attackSpeedmultiplier *= Mathf.Pow(Hbdebuff.Value / 2, itemCount2);
+                                        attackSpeedmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2) / 2;
                                     else
                                         attackSpeedmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }
@@ -458,7 +471,7 @@ namespace Her_Burden
                                 if (itemCount > 0)
                                 {
                                     if (cb.GetBuffCount(ExperimentalBuff.buffIndex) > 0)
-                                        moveSpeedmultiplier *= Mathf.Pow(Hbbuff.Value * 2, itemCount);
+                                        moveSpeedmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount) * 2;
                                     else
                                         moveSpeedmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
@@ -466,7 +479,7 @@ namespace Her_Burden
                                 if (itemCount2 > 0 && Hbdbt.Value == true)
                                 {
                                     if (cb.GetBuffCount(ExperimentalDeBuff.buffIndex) > 0)
-                                        moveSpeedmultiplier *= Mathf.Pow(Hbdebuff.Value / 2, itemCount2);
+                                        moveSpeedmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2) / 2;
                                     else
                                         moveSpeedmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }
@@ -517,7 +530,7 @@ namespace Her_Burden
                                 if (itemCount > 1)
                                 {
                                     if (cb.GetBuffCount(ExperimentalBuff.buffIndex) > 0)
-                                        armormultiplier *= Mathf.Pow(Hbbuff.Value * 2, itemCount);
+                                        armormultiplier *= Mathf.Pow(Hbbuff.Value, itemCount) * 2;
                                     else
                                         armormultiplier *= Mathf.Pow(Hbbuff.Value, itemCount-1);
                                 }
@@ -525,7 +538,7 @@ namespace Her_Burden
                                 if (itemCount2 > 0 && Hbdbt.Value == true)
                                 {
                                     if (cb.GetBuffCount(ExperimentalDeBuff.buffIndex) > 0)
-                                        armormultiplier *= Mathf.Pow(Hbdebuff.Value / 2, itemCount2);
+                                        armormultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2) / 2;
                                     else
                                         armormultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }
@@ -552,7 +565,7 @@ namespace Her_Burden
                                 if (itemCount > 0)
                                 {
                                     if (cb.GetBuffCount(ExperimentalBuff.buffIndex) > 0)
-                                        damagemultiplier *= Mathf.Pow(Hbbuff.Value * 2, itemCount);
+                                        damagemultiplier *= Mathf.Pow(Hbbuff.Value, itemCount) * 2;
                                     else
                                         damagemultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
@@ -560,7 +573,7 @@ namespace Her_Burden
                                 if (itemCount2 > 0 && Hbdbt.Value == true)
                                 {
                                     if (cb.GetBuffCount(ExperimentalDeBuff.buffIndex) > 0)
-                                        damagemultiplier *= Mathf.Pow(Hbdebuff.Value / 2, itemCount2);
+                                        damagemultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2) / 2;
                                     else
                                         damagemultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }
@@ -587,7 +600,7 @@ namespace Her_Burden
                                 if (itemCount > 0)
                                 {
                                     if (cb.GetBuffCount(ExperimentalBuff.buffIndex) > 0)
-                                        regenmultiplier *= Mathf.Pow(Hbbuff.Value * 2, itemCount);
+                                        regenmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount) * 2;
                                     else
                                         regenmultiplier *= Mathf.Pow(Hbbuff.Value, itemCount);
                                 }
@@ -595,7 +608,7 @@ namespace Her_Burden
                                 if (itemCount2 > 0 && Hbdbt.Value == true)
                                 {
                                     if (cb.GetBuffCount(ExperimentalDeBuff.buffIndex) > 0)
-                                        regenmultiplier *= Mathf.Pow(Hbdebuff.Value / 2, itemCount2);
+                                        regenmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2) / 2;
                                     else
                                         regenmultiplier *= Mathf.Pow(Hbdebuff.Value, itemCount2);
                                 }
