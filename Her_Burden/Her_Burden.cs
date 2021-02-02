@@ -20,7 +20,7 @@ namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.3.2")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.3.3")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI), nameof(BuffAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
 
@@ -40,6 +40,7 @@ namespace Her_Burden
         public static ConfigEntry<bool> Hbpul { get; set; }
         public static ConfigEntry<bool> Hbgoi { get; set; }
         public static ConfigEntry<bool> Hbdbt { get; set; }
+        public static ConfigEntry<bool> Hbvst { get; set; }
         public static ConfigEntry<string> Hbiiv { get; set; }
         public static ConfigEntry<string> Hbvos { get; set; }
         public static ConfigEntry<float> Hbims { get; set; }
@@ -55,6 +56,7 @@ namespace Her_Burden
             Hbpul = Config.Bind<bool>("Her Burden Toggle", "Toggle Luck Effect", false, "Changes if luck effects chance to pickup Her Burden Variants once you have one");
             Hbgoi = Config.Bind<bool>("Her Burden Toggle", "Toggle Give Original Item", false, "Changes if you also get the original item along with a Her Burden Variant");
             Hbdbt = Config.Bind<bool>("Her Burden Toggle", "Toggle Debuffs", true, "Changes if debuffs are applied or not, if disabled, Her Burden Variants changes to legendary and makes it have a chance to drop on kill");
+            Hbvst = Config.Bind<bool>("Her Burden Toggle", "Toggle Variant Drop Count", true, "Changes if all Her Burden Variants are in the drop list or just Her Burden, if disabled, only Her Burden is in the drop list");
             Hbiiv = Config.Bind<string>("Her Burden General", "Artist", "Hush", "Decides what artist to use, \"Hush\" or \"aka6\".");
             Hbvos = Config.Bind<string>("Her Burden General", "Variant Shown on Survivor", "Burden", "Changes what Variant is shown on the Survivor, \"Burden\" \"Recluse\" \"Fury\" \"Torpor\" \"Rancor\" \"Panic\".");
             Hbims = Config.Bind<float>("Her Burden Size", "Max size of the item", 2, "Changes the max size of the item on the Survivor");
@@ -107,51 +109,144 @@ namespace Her_Burden
 
             On.RoR2.GenericPickupController.GrantItem += (orig, self, body, inventory) =>
             {
-                bool changepickup = false;
-                if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 || body.inventory.GetItemCount(HerRecluse.itemIndex) > 0 || body.inventory.GetItemCount(HerFury.itemIndex) > 0 || body.inventory.GetItemCount(HerTorpor.itemIndex) > 0 || body.inventory.GetItemCount(HerRancor.itemIndex) > 0 || body.inventory.GetItemCount(HerPanic.itemIndex) > 0)
-                    changepickup = true;
-                bool blacklist = false;
-                if (Hbdbt.Value == false)
-                    blacklist = true;
-                if (self.pickupIndex == PickupCatalog.FindPickupIndex(HerBurden.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerRecluse.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerFury.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerTorpor.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerRancor.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerPanic.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapWhite) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapGreen) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapRed) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapYellow))
-                    blacklist = true;
-                if (blacklist == false && Hbgoi.Value == true)
-                    if (self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.Pearl) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ShinyPearl))
-                        blacklist = true;
-
-                bool CheckRollTrue;
-                if (Hbpul.Value == true)
-                    CheckRollTrue = Util.CheckRoll(Hbcpu.Value, body.master);
-                else
-                    CheckRollTrue = Util.CheckRoll(Hbcpu.Value);
-
-                if (changepickup == true && CheckRollTrue == true && blacklist == false && Hbgoi.Value == true)
-                    orig(self, body, inventory);
-                if (changepickup == true && CheckRollTrue == true && blacklist == false)
+                if(Hbvst.Value)
                 {
-                    switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
+                    bool changepickup = false;
+                    if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 || body.inventory.GetItemCount(HerRecluse.itemIndex) > 0 || body.inventory.GetItemCount(HerFury.itemIndex) > 0 || body.inventory.GetItemCount(HerTorpor.itemIndex) > 0 || body.inventory.GetItemCount(HerRancor.itemIndex) > 0 || body.inventory.GetItemCount(HerPanic.itemIndex) > 0)
+                        changepickup = true;
+                    bool blacklist = false;
+                    if (Hbdbt.Value == false)
+                        blacklist = true;
+                    if (self.pickupIndex == PickupCatalog.FindPickupIndex(HerBurden.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerRecluse.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerFury.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerTorpor.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerRancor.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerPanic.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapWhite) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapGreen) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapRed) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapYellow))
+                        blacklist = true;
+                    if (blacklist == false && Hbgoi.Value == true)
+                        if (self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.Pearl) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ShinyPearl))
+                            blacklist = true;
+
+                    bool CheckRollTrue;
+                    if (Hbpul.Value == true)
+                        CheckRollTrue = Util.CheckRoll(Hbcpu.Value, body.master);
+                    else
+                        CheckRollTrue = Util.CheckRoll(Hbcpu.Value);
+
+                    if (changepickup == true && CheckRollTrue == true && blacklist == false && Hbgoi.Value == true)
+                        orig(self, body, inventory);
+                    if (changepickup == true && CheckRollTrue == true && blacklist == false)
                     {
-                        case 0:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden.itemIndex);
-                            break;
-                        case 1:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerRecluse.itemIndex);
-                            break;
-                        case 2:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerFury.itemIndex);
-                            break;
-                        case 3:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerTorpor.itemIndex);
-                            break;
-                        case 4:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerRancor.itemIndex);
-                            break;
-                        case 5:
-                            self.pickupIndex = PickupCatalog.FindPickupIndex(HerPanic.itemIndex);
-                            break;
+                        switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
+                        {
+                            case 0:
+                                self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden.itemIndex);
+                                break;
+                            case 1:
+                                self.pickupIndex = PickupCatalog.FindPickupIndex(HerRecluse.itemIndex);
+                                break;
+                            case 2:
+                                self.pickupIndex = PickupCatalog.FindPickupIndex(HerFury.itemIndex);
+                                break;
+                            case 3:
+                                self.pickupIndex = PickupCatalog.FindPickupIndex(HerTorpor.itemIndex);
+                                break;
+                            case 4:
+                                self.pickupIndex = PickupCatalog.FindPickupIndex(HerRancor.itemIndex);
+                                break;
+                            case 5:
+                                self.pickupIndex = PickupCatalog.FindPickupIndex(HerPanic.itemIndex);
+                                break;
+                        }
                     }
+                    orig(self, body, inventory);
                 }
-                orig(self, body, inventory);
+                if (!Hbvst.Value && !Hbdbt.Value)
+                {
+                    if (self.pickupIndex == PickupCatalog.FindPickupIndex(HerBurden.itemIndex))
+                    {
+                        switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
+                        {
+                            case 0:
+                                orig(self, body, inventory);
+                                break;
+                            case 1:
+                                PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerRecluse.itemIndex), body.corePosition, Vector3.up * 20f);
+                                Destroy(self.gameObject);
+                                break;
+                            case 2:
+                                PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerFury.itemIndex), body.corePosition, Vector3.up * 20f);
+                                Destroy(self.gameObject);
+                                break;
+                            case 3:
+                                PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerTorpor.itemIndex), body.corePosition, Vector3.up * 20f);
+                                Destroy(self.gameObject);
+                                break;
+                            case 4:
+                                PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerRancor.itemIndex), body.corePosition, Vector3.up * 20f);
+                                Destroy(self.gameObject);
+                                break;
+                            case 5:
+                                PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerPanic.itemIndex), body.corePosition, Vector3.up * 20f);
+                                Destroy(self.gameObject);
+                                break;
+                        }
+                        return;
+                    }
+                    orig(self, body, inventory);
+
+                }
+                if (!Hbvst.Value && Hbdbt.Value)
+                {
+                    bool changepickup = false;
+                    if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 || body.inventory.GetItemCount(HerRecluse.itemIndex) > 0 || body.inventory.GetItemCount(HerFury.itemIndex) > 0 || body.inventory.GetItemCount(HerTorpor.itemIndex) > 0 || body.inventory.GetItemCount(HerRancor.itemIndex) > 0 || body.inventory.GetItemCount(HerPanic.itemIndex) > 0)
+                        changepickup = true;
+                    bool blacklist = false;
+                    if (Hbdbt.Value == false)
+                        blacklist = true;
+                    if (self.pickupIndex == PickupCatalog.FindPickupIndex(HerRecluse.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerFury.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerTorpor.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerRancor.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerPanic.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapWhite) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapGreen) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapRed) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ScrapYellow))
+                        blacklist = true;
+                    if (blacklist == false && Hbgoi.Value == true)
+                        if (self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.Pearl) || self.pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ShinyPearl))
+                            blacklist = true;
+
+                    bool CheckRollTrue;
+                    if (Hbpul.Value == true)
+                        CheckRollTrue = Util.CheckRoll(Hbcpu.Value, body.master);
+                    else
+                        CheckRollTrue = Util.CheckRoll(Hbcpu.Value);
+
+                    if (changepickup == true && CheckRollTrue == true && blacklist == false && Hbgoi.Value == true)
+                        orig(self, body, inventory);
+                    if (changepickup == true && CheckRollTrue == true && blacklist == false && Hbvst.Value)
+                    {
+                        switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
+                        {
+                            case 0:
+                                orig(self, body, inventory);
+                                break;
+                            case 1:
+                                PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerRecluse.itemIndex), body.corePosition, Vector3.up * 20f);
+                                Destroy(self.gameObject);
+                                break;
+                            case 2:
+                                PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerFury.itemIndex), body.corePosition, Vector3.up * 20f);
+                                Destroy(self.gameObject);
+                                break;
+                            case 3:
+                                PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerTorpor.itemIndex), body.corePosition, Vector3.up * 20f);
+                                Destroy(self.gameObject);
+                                break;
+                            case 4:
+                                PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerRancor.itemIndex), body.corePosition, Vector3.up * 20f);
+                                Destroy(self.gameObject);
+                                break;
+                            case 5:
+                                PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerPanic.itemIndex), body.corePosition, Vector3.up * 20f);
+                                Destroy(self.gameObject);
+                                break;
+                        }
+                        return;
+                    }
+                    orig(self, body, inventory);
+                }
+
 
                 //Handle the size change with scripts
                 if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true)
@@ -161,6 +256,17 @@ namespace Her_Burden
                 }
             };
             WhoKnows();
+            if (!Hbvst.Value)
+            {
+                On.RoR2.Run.BuildDropTable += (orig, self) => {
+                    ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Tier3, HerFury.itemIndex);
+                    ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Tier3, HerPanic.itemIndex);
+                    ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Tier3, HerRancor.itemIndex);
+                    ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Tier3, HerRecluse.itemIndex);
+                    ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Tier3, HerTorpor.itemIndex);
+                    orig(self);
+                };
+            }
             On.RoR2.CharacterBody.Update += CharacterBody_Update;
             On.RoR2.CharacterMaster.OnBodyStart += CharacterMaster_OnBodyStart;
             On.EntityStates.Duplicator.Duplicating.OnEnter += Duplicating_OnEnter;
@@ -185,10 +291,12 @@ namespace Her_Burden
                 return;
             bool CheckRollTrue;
             if (Hbpul.Value == true)
-                CheckRollTrue = Util.CheckRoll(Hbcpu.Value, report.attackerBody.master);
+                CheckRollTrue = Util.CheckRoll(Hbedc.Value, report.attackerBody.master);
             else
-                CheckRollTrue = Util.CheckRoll(Hbcpu.Value);
-            if (CheckRollTrue && Hbdbt.Value == false)
+                CheckRollTrue = Util.CheckRoll(Hbedc.Value);
+            if (CheckRollTrue && !Hbvst.Value)
+                PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerBurden.itemIndex), report.victimBody.corePosition, Vector3.up * 20f);
+            if (CheckRollTrue && Hbvst.Value)
             {
                 {
                     switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
