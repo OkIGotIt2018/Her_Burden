@@ -20,7 +20,7 @@ namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.3.4")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.3.5")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI), nameof(BuffAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
 
@@ -185,6 +185,7 @@ namespace Her_Burden
                     }
                     orig(self, body, inventory);
                 }
+                orig(self, body, inventory);
 
 
                 //Handle the size change with scripts
@@ -428,12 +429,6 @@ namespace Her_Burden
                 self.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(self.baseNameToken);
                 self.gameObject.GetComponent<BodySizeScript>().UpdateStacks(self.inventory.GetItemCount(VariantOnSurvivor));
             }
-
-            if (self.equipmentSlot.Equals(HerGamble.equipmentIndex) || self.inventory.GetItemCount(HerBurden.itemIndex) == 0 && self.inventory.GetItemCount(HerRecluse.itemIndex) == 0 && self.inventory.GetItemCount(HerFury.itemIndex) == 0 && self.inventory.GetItemCount(HerTorpor.itemIndex) == 0 && self.inventory.GetItemCount(HerRancor.itemIndex) == 0 && self.inventory.GetItemCount(HerPanic.itemIndex) == 0)
-                ItemDropAPI.RemoveFromDefaultEquipment(HerGamble.equipmentIndex);
-            else
-                ItemDropAPI.AddToDefaultEquipment(HerGamble.equipmentIndex);
-
         }
 
         public  void WhoKnows()
