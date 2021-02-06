@@ -20,7 +20,7 @@ namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.3.5")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.3.6")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI), nameof(BuffAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
 
@@ -77,6 +77,7 @@ namespace Her_Burden
                 Hbvos.Value = "Burden";
             if (Hbiiv.Value != "Hush" && Hbiiv.Value != "aka6")
                 Hbiiv.Value = "Hush";
+            Hbisos.Value = false;
 
             HerBurdenItem.Init();
             HerRecluseItem.Init();
@@ -155,7 +156,6 @@ namespace Her_Burden
                                 break;
                         }
                     }
-                    orig(self, body, inventory);
                 }
                 if (!Hbvst.Value && Hbdbt.Value)
                 {
@@ -183,7 +183,6 @@ namespace Her_Burden
                     {
                         self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden.itemIndex);
                     }
-                    orig(self, body, inventory);
                 }
                 orig(self, body, inventory);
 

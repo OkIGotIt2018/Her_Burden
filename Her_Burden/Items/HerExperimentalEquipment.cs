@@ -16,6 +16,9 @@ namespace Her_Burden
     {
         public static void Init()
         {
+            var Hgcolor = ColorCatalog.ColorIndex.LunarItem;
+            if (!Hbdbt.Value)
+                Hgcolor = ColorCatalog.ColorIndex.Equipment;
             HerGamble = new EquipmentDef
             {
                 name = "HERGAMBLE",
@@ -23,8 +26,8 @@ namespace Her_Burden
                 pickupToken = "HERGAMBLE_PICKUP",
                 descriptionToken = "HERGAMBLE_DESC",
                 loreToken = "HERGAMBLE_LORE",
-                isLunar = true,
-                colorIndex = ColorCatalog.ColorIndex.LunarItem,
+                isLunar = Hbdbt.Value,
+                colorIndex = Hgcolor,
                 pickupIconPath = "@Her_Burden:Assets/Import/herburdenicon/" + Hbiiv.Value + "ItemIcon.png",
                 pickupModelPath = "@Her_Burden:Assets/Import/herburden/her_gamble.prefab",
                 canDrop = true,
