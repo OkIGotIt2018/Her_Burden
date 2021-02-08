@@ -20,7 +20,7 @@ namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.3.6")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.3.7")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI), nameof(BuffAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
 
@@ -77,7 +77,6 @@ namespace Her_Burden
                 Hbvos.Value = "Burden";
             if (Hbiiv.Value != "Hush" && Hbiiv.Value != "aka6")
                 Hbiiv.Value = "Hush";
-            Hbisos.Value = false;
 
             HerBurdenItem.Init();
             HerRecluseItem.Init();
@@ -265,6 +264,8 @@ namespace Her_Burden
             if (Hbdbt.Value == true)
                 return;
             if (!report.attacker || !report.attackerBody)
+                return;
+            if (report.victimMaster == null)
                 return;
             if (report.victimMaster.minionOwnership.ownerMaster)
                 return;
