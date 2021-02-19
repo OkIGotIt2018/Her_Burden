@@ -52,8 +52,16 @@ namespace Her_Burden
         {
             //AssetPlus is deprecated, so I switched it to use the current LanguageAPI
             LanguageAPI.Add("HERGAMBLE_NAME", "Her Gamble");
-            LanguageAPI.Add("HERGAMBLE_PICKUP", "An equipment that gambles your stats");
-            LanguageAPI.Add("HERGAMBLE_DESC", "An equipment that gambles your stats that come from Her Burden Variants");
+            if (Hbdbt.Value)
+            {
+                LanguageAPI.Add("HERGAMBLE_PICKUP", "An equipment that gambles your stats");
+                LanguageAPI.Add("HERGAMBLE_DESC", "An equipment that gambles your stats that come from Her Burden Variants");
+            }
+            if (!Hbdbt.Value)
+            {
+                LanguageAPI.Add("HERGAMBLE_PICKUP", "Has a chance to double your stats");
+                LanguageAPI.Add("HERGAMBLE_DESC", "Has a chance to double your stats that come from Her Burden Variants");
+            }
             LanguageAPI.Add("HERGAMBLE_LORE", "None");
 
         }

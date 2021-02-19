@@ -39,8 +39,16 @@ namespace Her_Burden
         {
             //AssetPlus is deprecated, so I switched it to use the current LanguageAPI
             LanguageAPI.Add("HERFURY_NAME", "Her Fury");
-            LanguageAPI.Add("HERFURY_PICKUP", "Increase attack speed and decrease HP.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>");
-            LanguageAPI.Add("HERFURY_DESC", "Increase attack speed by 5% and decrease HP by 2.5%.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>");
+            if (Hbdbt.Value)
+            {
+                LanguageAPI.Add("HERFURY_PICKUP", "Increase attack speed and decrease HP.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>");
+                LanguageAPI.Add("HERFURY_DESC", "Increase attack speed by 5% and decrease HP by 2.5%.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>");
+            }
+            if (!Hbdbt.Value)
+            {
+                LanguageAPI.Add("HERFURY_PICKUP", "Increase attack speed.\nMonster now have a chance to drop variants of: <color=#e7553b>Her Burden</color>");
+                LanguageAPI.Add("HERFURY_DESC", "Increase attack speed by 5%.\nMonster now have a chance to drop variants of: <color=#e7553b>Her Burden</color>");
+            }
             LanguageAPI.Add("HERFURY_LORE", "None");
 
         }

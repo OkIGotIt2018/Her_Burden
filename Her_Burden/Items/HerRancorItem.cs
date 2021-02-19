@@ -39,8 +39,16 @@ namespace Her_Burden
         {
             //AssetPlus is deprecated, so I switched it to use the current LanguageAPI
             LanguageAPI.Add("HERRANCOR_NAME", "Her Rancor");
-            LanguageAPI.Add("HERRANCOR_PICKUP", "Increase damage and decrease armor.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>");
-            LanguageAPI.Add("HERRANCOR_DESC", "Increase damage by 5% and decrease armor by 2.5%.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>");
+            if (Hbdbt.Value)
+            {
+                LanguageAPI.Add("HERRANCOR_PICKUP", "Increase damage and decrease armor.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>");
+                LanguageAPI.Add("HERRANCOR_DESC", "Increase damage by 5% and decrease armor by 2.5%.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>");
+            }
+            if (!Hbdbt.Value)
+            {
+                LanguageAPI.Add("HERRANCOR_PICKUP", "Increase damage.\nMonster now have a chance to drop variants of: <color=#e7553b>Her Burden</color>");
+                LanguageAPI.Add("HERRANCOR_DESC", "Increase damage by 5%.\nMonster now have a chance to drop variants of: <color=#e7553b>Her Burden</color>");
+            }
             LanguageAPI.Add("HERRANCOR_LORE", "None");
 
         }

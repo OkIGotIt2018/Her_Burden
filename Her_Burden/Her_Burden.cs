@@ -20,7 +20,7 @@ namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.3.7")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.4.0")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI), nameof(BuffAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
 
@@ -35,6 +35,7 @@ namespace Her_Burden
         public static EquipmentDef HerGamble;
         public static BuffDef ExperimentalBuff;
         public static BuffDef ExperimentalDeBuff;
+        public static ArtifactDef HerCurse;
         public static ItemIndex VariantOnSurvivor;
         public static ConfigEntry<bool> Hbisos { get; set; }
         public static ConfigEntry<bool> Hbpul { get; set; }
@@ -85,6 +86,7 @@ namespace Her_Burden
             HerRancorItem.Init();
             HerPanicItem.Init();
             HerGambleEquipment.Init();
+            HerCurseArtifact.Init();
 
 
             //maxHealth-moveSpeed   Her Burden
@@ -109,6 +111,19 @@ namespace Her_Burden
 
             On.RoR2.GenericPickupController.GrantItem += (orig, self, body, inventory) =>
             {
+                if (RunArtifactManager.instance.IsArtifactEnabled(HerCurse))
+                {
+                    orig(self, body, inventory);
+
+
+                    //Handle the size change with scripts
+                    if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true)
+                    {
+                        body.gameObject.AddComponent<BodySizeScript>();
+                        body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
+                    }
+                    return;
+                }
                 if(Hbvst.Value && Hbdbt.Value)
                 {
                     bool changepickup = false;
@@ -178,7 +193,7 @@ namespace Her_Burden
 
                     if (changepickup == true && CheckRollTrue == true && blacklist == false && Hbgoi.Value == true)
                         orig(self, body, inventory);
-                    if (changepickup == true && CheckRollTrue == true && blacklist == false && Hbvst.Value)
+                    if (changepickup == true && CheckRollTrue == true && blacklist == false)
                     {
                         self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden.itemIndex);
                     }
@@ -223,10 +238,65 @@ namespace Her_Burden
             On.RoR2.EquipmentSlot.PerformEquipmentAction += EquipmentSlot_PerformEquipmentAction;
             GlobalEventManager.onCharacterDeathGlobal += GlobalEventManager_onCharacterDeathGlobal;
             On.RoR2.PickupDropletController.CreatePickupDroplet += PickupDropletController_CreatePickupDroplet;
+            On.RoR2.CharacterMaster.RespawnExtraLife += CharacterMaster_RespawnExtraLife;
+        }
+
+        private void CharacterMaster_RespawnExtraLife(On.RoR2.CharacterMaster.orig_RespawnExtraLife orig, CharacterMaster self)
+        {
+            CharacterBody body = self.GetBody();
+            if (body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true)
+                DestroyImmediate(body.gameObject.GetComponent<BodySizeScript>());
+            orig(self);
+            if (self.playerCharacterMasterController)
+            {
+                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true)
+                {
+                    body.gameObject.AddComponent<BodySizeScript>();
+                    body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
+                    body.gameObject.GetComponent<BodySizeScript>().UpdateStacks(body.inventory.GetItemCount(VariantOnSurvivor));
+                }
+            }
         }
 
         private void PickupDropletController_CreatePickupDroplet(On.RoR2.PickupDropletController.orig_CreatePickupDroplet orig, PickupIndex pickupIndex, Vector3 position, Vector3 velocity)
         {
+            bool burdenvariant = false;
+            if (pickupIndex == PickupCatalog.FindPickupIndex(HerBurden.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerRecluse.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerFury.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerTorpor.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerRancor.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerPanic.itemIndex))
+                burdenvariant = true;
+            if (PickupCatalog.GetPickupDef(pickupIndex).itemIndex != ItemIndex.None)
+                Chat.AddMessage("Item");
+            if (PickupCatalog.GetPickupDef(pickupIndex).equipmentIndex != EquipmentIndex.None)
+                Chat.AddMessage("Equipment");
+            if (RunArtifactManager.instance.IsArtifactEnabled(HerCurse) && PickupCatalog.GetPickupDef(pickupIndex).itemIndex != ItemIndex.None && !burdenvariant && Hbvst.Value)
+            {
+                switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
+                {
+                    case 0:
+                        PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerBurden.itemIndex), position, velocity);
+                        break;
+                    case 1:
+                        PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerRecluse.itemIndex), position, velocity);
+                        break;
+                    case 2:
+                        PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerFury.itemIndex), position, velocity);
+                        break;
+                    case 3:
+                        PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerTorpor.itemIndex), position, velocity);
+                        break;
+                    case 4:
+                        PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerRancor.itemIndex), position, velocity);
+                        break;
+                    case 5:
+                        PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerPanic.itemIndex), position, velocity);
+                        break;
+                }
+                return;
+            }
+            if (RunArtifactManager.instance.IsArtifactEnabled(HerCurse) && PickupCatalog.GetPickupDef(pickupIndex).itemIndex != ItemIndex.None && !burdenvariant && !Hbvst.Value)
+            {
+                PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerBurden.itemIndex), position, velocity);
+                return;
+            }
             if (pickupIndex == PickupCatalog.FindPickupIndex(HerBurden.itemIndex) && !Hbvst.Value)
             {
                 switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
@@ -361,7 +431,7 @@ namespace Her_Burden
                 orig(self);
                 return;
             }
-            var body = PlayerCharacterMasterController.instances[0].master.GetBody();
+            CharacterBody body = PlayerCharacterMasterController.instances[0].master.GetBody();
             int itemcount = 0;
             List<ItemIndex> items = new List<ItemIndex>();
             if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0)
