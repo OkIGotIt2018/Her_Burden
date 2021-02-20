@@ -20,7 +20,7 @@ namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.4.0")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.4.1")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI), nameof(BuffAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
 
@@ -263,10 +263,6 @@ namespace Her_Burden
             bool burdenvariant = false;
             if (pickupIndex == PickupCatalog.FindPickupIndex(HerBurden.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerRecluse.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerFury.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerTorpor.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerRancor.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerPanic.itemIndex))
                 burdenvariant = true;
-            if (PickupCatalog.GetPickupDef(pickupIndex).itemIndex != ItemIndex.None)
-                Chat.AddMessage("Item");
-            if (PickupCatalog.GetPickupDef(pickupIndex).equipmentIndex != EquipmentIndex.None)
-                Chat.AddMessage("Equipment");
             if (RunArtifactManager.instance.IsArtifactEnabled(HerCurse) && PickupCatalog.GetPickupDef(pickupIndex).itemIndex != ItemIndex.None && !burdenvariant && Hbvst.Value)
             {
                 switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
