@@ -20,7 +20,7 @@ namespace Her_Burden
 {
     [R2APISubmoduleDependency(nameof(ResourcesAPI))]
     [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.4.1")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.4.2")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(ItemDropAPI), nameof(LanguageAPI), nameof(BuffAPI))]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
 
@@ -211,7 +211,8 @@ namespace Her_Burden
             WhoKnows();
             if (!Hbvst.Value)
             {
-                On.RoR2.Run.BuildDropTable += (orig, self) => {
+                On.RoR2.Run.BuildDropTable += (orig, self) =>
+                {
                     if (Hbdbt.Value)
                     {
                         ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Lunar, HerFury.itemIndex);
@@ -229,6 +230,12 @@ namespace Her_Burden
                         ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Tier3, HerTorpor.itemIndex);
                     }
                     orig(self);
+                };
+            }
+            if (RunArtifactManager.instance.IsArtifactEnabled(HerCurse))
+            {
+                On.RoR2.Run.BuildDropTable += (orig, self) =>
+                {
                 };
             }
             On.RoR2.CharacterBody.Update += CharacterBody_Update;
@@ -263,7 +270,10 @@ namespace Her_Burden
             bool burdenvariant = false;
             if (pickupIndex == PickupCatalog.FindPickupIndex(HerBurden.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerRecluse.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerFury.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerTorpor.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerRancor.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerPanic.itemIndex))
                 burdenvariant = true;
-            if (RunArtifactManager.instance.IsArtifactEnabled(HerCurse) && PickupCatalog.GetPickupDef(pickupIndex).itemIndex != ItemIndex.None && !burdenvariant && Hbvst.Value)
+            bool blacklist = false;
+            if (pickupIndex == PickupCatalog.FindPickupIndex(ItemIndex.ArtifactKey))
+                blacklist = true;
+            if (RunArtifactManager.instance.IsArtifactEnabled(HerCurse) && PickupCatalog.GetPickupDef(pickupIndex).itemIndex != ItemIndex.None && !burdenvariant && Hbvst.Value && blacklist)
             {
                 switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
                 {
@@ -288,7 +298,7 @@ namespace Her_Burden
                 }
                 return;
             }
-            if (RunArtifactManager.instance.IsArtifactEnabled(HerCurse) && PickupCatalog.GetPickupDef(pickupIndex).itemIndex != ItemIndex.None && !burdenvariant && !Hbvst.Value)
+            if (RunArtifactManager.instance.IsArtifactEnabled(HerCurse) && PickupCatalog.GetPickupDef(pickupIndex).itemIndex != ItemIndex.None && !burdenvariant && !Hbvst.Value && blacklist)
             {
                 PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerBurden.itemIndex), position, velocity);
                 return;
