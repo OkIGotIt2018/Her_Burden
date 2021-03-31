@@ -1,9 +1,8 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
+using EnigmaticThunder.Modules;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using R2API;
-using R2API.Utils;
 using RoR2;
 using System;
 using System.IO;
@@ -14,47 +13,47 @@ namespace Her_Burden
 {
     class HerTorporItem : Her_Burden
     {
+        private static String HERTORPOR_PICKUP;
+        private static String HERTORPOR_DESC;
+        private static String HERTORPOR_LORE;
         public static void Init()
         {
             ItemTier Hbtier = ItemTier.Lunar;
             if (Hbdbt.Value == false)
                 Hbtier = ItemTier.Tier3;
-            HerTorpor = new ItemDef
-            {
-                name = "HERTORPOR",
-                nameToken = "HERTORPOR_NAME",
-                pickupToken = "HERTORPOR_PICKUP",
-                descriptionToken = "HERTORPOR_DESC",
-                loreToken = "HERTORPOR_LORE",
-                tier = Hbtier,
-                pickupIconPath = "@Her_Burden:Assets/Import/herburdenicon/HushroyalblueItemIcon.png",
-                pickupModelPath = "@Her_Burden:Assets/Import/herburden/" + Hbiiv.Value + "royalblueher_burden.prefab",
-                canRemove = true,
-                hidden = false
-            };
             AddTokens();
+            HerTorpor = ScriptableObject.CreateInstance<ItemDef>();
+            HerTorpor.name = "HERTORPOR";
+            HerTorpor.nameToken = "Her Torpor";
+            HerTorpor.pickupToken = HERTORPOR_PICKUP;
+            HerTorpor.descriptionToken = HERTORPOR_DESC;
+            HerTorpor.loreToken = HERTORPOR_LORE;
+            HerTorpor.tier = Hbtier;
+            HerTorpor.pickupIconSprite = Her_Burden.bundle.LoadAsset<Sprite>(Hbiiv.Value + "royalblueItemIcon");
+            HerTorpor.pickupModelPrefab = Her_Burden.bundle.LoadAsset<GameObject>(Hbiiv.Value + "royalblueher_burden");
+            HerTorpor.canRemove = true;
+            HerTorpor.hidden = false;
             AddLocation();
         }
         private static void AddTokens()
         {
             //AssetPlus is deprecated, so I switched it to use the current LanguageAPI
-            LanguageAPI.Add("HERTORPOR_NAME", "Her Torpor");
             if (Hbdbt.Value)
             {
-                LanguageAPI.Add("HERTORPOR_PICKUP", "Increase regen and decrease attack speed.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>");
-                LanguageAPI.Add("HERTORPOR_DESC", "Increase regen by 5% and decrease attack speed by 2.5%.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>");
+                HERTORPOR_PICKUP = "Increase regen and decrease attack speed.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>";
+                HERTORPOR_DESC = "Increase regen by 5% and decrease attack speed by 2.5%.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>";
             }
             if (!Hbdbt.Value)
             {
-                LanguageAPI.Add("HERTORPOR_PICKUP", "Increase regen.\nMonster now have a chance to drop variants of: <color=#e7553b>Her Burden</color>");
-                LanguageAPI.Add("HERTORPOR_DESC", "Increase regen by 5%.\nMonster now have a chance to drop variants of: <color=#e7553b>Her Burden</color>");
+                HERTORPOR_PICKUP = "Increase regen.\nMonsters now have a chance to drop variants of: <color=#e7553b>Her Burden</color>";
+                HERTORPOR_DESC = "Increase regen by 5%.\nMonsters now have a chance to drop variants of: <color=#e7553b>Her Burden</color>";
             }
-            LanguageAPI.Add("HERTORPOR_LORE", "None");
+            HERTORPOR_LORE = "None";
 
         }
         public static void AddLocation()
         {
-            if (Hbisos.Value == true)
+            /*if (Hbisos.Value == true)
             {
                 GameObject followerPrefab = Resources.Load<GameObject>("@Her_Burden:Assets/Import/herburden/" + Hbiiv.Value + "royalblueher_burden.prefab");
                 followerPrefab.AddComponent<PrefabSizeScript>();
@@ -193,7 +192,8 @@ namespace Her_Burden
             {
                 var rules = new ItemDisplayRuleDict(null);
                 HerTorpor.itemIndex = ItemAPI.Add(new CustomItem(HerTorpor, rules));
-            }
+            }*/
+            Pickups.RegisterItem(HerTorpor);
         }
     }
 }

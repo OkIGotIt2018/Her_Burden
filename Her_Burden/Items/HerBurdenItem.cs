@@ -1,9 +1,8 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
+using EnigmaticThunder.Modules;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using R2API;
-using R2API.Utils;
 using RoR2;
 using System;
 using System.IO;
@@ -14,47 +13,62 @@ namespace Her_Burden
 {
     class HerBurdenItem : Her_Burden
     {
+        private static String HERBURDEN_PICKUP;
+        private static String HERBURDEN_DESC;
+        private static String HERBURDEN_LORE;
         public static void Init()
         {
             ItemTier Hbtier = ItemTier.Lunar;
             if (Hbdbt.Value == false)
                 Hbtier = ItemTier.Tier3;
-            HerBurden = new ItemDef
-            {
-                name = "HERBURDEN",
-                nameToken = "HERBURDEN_NAME",
-                pickupToken = "HERBURDEN_PICKUP",
-                descriptionToken = "HERBURDEN_DESC",
-                loreToken = "HERBURDEN_LORE",
-                tier = Hbtier,
-                pickupIconPath = "@Her_Burden:Assets/Import/herburdenicon/" + Hbiiv.Value + "ItemIcon.png",
-                pickupModelPath = "@Her_Burden:Assets/Import/herburden/" + Hbiiv.Value + "her_burden.prefab",
-                canRemove = true,
-                hidden = false
-            };
             AddTokens();
+            HerBurden = ScriptableObject.CreateInstance<ItemDef>();
+            HerBurden.name = "HERBURDEN";
+            HerBurden.nameToken = "Her Burden";
+            HerBurden.pickupToken = HERBURDEN_PICKUP;
+            HerBurden.descriptionToken = HERBURDEN_DESC;
+            HerBurden.loreToken = HERBURDEN_LORE;
+            HerBurden.tier = Hbtier;
+            HerBurden.pickupIconSprite = Her_Burden.bundle.LoadAsset<Sprite>(Hbiiv.Value + "ItemIcon");
+            HerBurden.pickupModelPrefab = Her_Burden.bundle.LoadAsset<GameObject>(Hbiiv.Value + "her_burden");
+            HerBurden.canRemove = true;
+            HerBurden.hidden = false;
             AddLocation();
         }
         private static void AddTokens()
         {
             //AssetPlus is deprecated, so I switched it to use the current LanguageAPI
-            LanguageAPI.Add("HERBURDEN_NAME", "Her Burden");
             if (Hbdbt.Value)
             {
-                LanguageAPI.Add("HERBURDEN_PICKUP", "Increase HP and decrease move speed.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>");
-                LanguageAPI.Add("HERBURDEN_DESC", "Increase HP by 5% and decrease move speed by 2.5%.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>");
+                HERBURDEN_PICKUP = "Increase HP and decrease move speed.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>";
+                HERBURDEN_DESC = "Increase HP by 5% and decrease move speed by 2.5%.\nAll item drops are now variants of: <color=#307FFF>Her Burden</color>";
             }
             if (!Hbdbt.Value)
             {
-                LanguageAPI.Add("HERBURDEN_PICKUP", "Increase HP.\nMonster now have a chance to drop variants of: <color=#e7553b>Her Burden</color>");
-                LanguageAPI.Add("HERBURDEN_DESC", "Increase HP by 5%.\nMonster now have a chance to drop variants of: <color=#e7553b>Her Burden</color>");
+                HERBURDEN_PICKUP = "Increase HP.\nMonsters now have a chance to drop variants of: <color=#e7553b>Her Burden</color>";
+                HERBURDEN_DESC = "Increase HP by 5%.\nMonsters now have a chance to drop variants of: <color=#e7553b>Her Burden</color>";
             }
-            LanguageAPI.Add("HERBURDEN_LORE", "None");
+            HERBURDEN_LORE = "None";
 
         }
         public static void AddLocation()
         {
-            if (Hbisos.Value == true)
+            /*GameObject followerPrefab = Her_Burden.bundle.LoadAsset<GameObject>(Hbiiv.Value + "her_burden");
+            followerPrefab.AddComponent<PrefabSizeScript>();
+            Vector3 generalScale = new Vector3(.0125f, .0125f, .0125f);
+            ItemDisplayRule what2 = new ItemDisplayRule
+            {
+                ruleType = ItemDisplayRuleType.ParentedPrefab,
+                followerPrefab = followerPrefab,
+                childName = "Pelvis",
+                localPos = new Vector3(0f, 0.1f, 0.1f),
+                localAngles = new Vector3(0f, 0.1f, 0.1f),
+                localScale = generalScale
+            };
+            DisplayRuleGroup what = new DisplayRuleGroup();
+            what.AddDisplayRule(what2);*/
+
+            /*if (Hbisos.Value == true)
             {
                 GameObject followerPrefab = Resources.Load<GameObject>("@Her_Burden:Assets/Import/herburden/" + Hbiiv.Value + "her_burden.prefab");
                 followerPrefab.AddComponent<PrefabSizeScript>();
@@ -181,6 +195,7 @@ namespace Her_Burden
                             localScale = generalScale
                         }
                     });
+                    Pickups.RegisterItem(HerBurden);
                     HerBurden.itemIndex = ItemAPI.Add(new CustomItem(HerBurden, rules));
                 }
                 else
@@ -194,7 +209,8 @@ namespace Her_Burden
             {
                 var rules = new ItemDisplayRuleDict(null);
                 HerBurden.itemIndex = ItemAPI.Add(new CustomItem(HerBurden, rules));
-            }
+            }*/
+            Pickups.RegisterItem(HerBurden);
         }
     }
 }

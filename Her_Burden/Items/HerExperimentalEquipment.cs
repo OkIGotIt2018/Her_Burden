@@ -1,9 +1,8 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
+using EnigmaticThunder.Modules;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using R2API;
-using R2API.Utils;
 using RoR2;
 using System;
 using System.IO;
@@ -14,61 +13,58 @@ namespace Her_Burden
 {
     class HerGambleEquipment : Her_Burden
     {
+        private static String HERGAMBLE_PICKUP;
+        private static String HERGAMBLE_DESC;
+        private static String HERGAMBLE_LORE;
         public static void Init()
         {
             var Hgcolor = ColorCatalog.ColorIndex.LunarItem;
             if (!Hbdbt.Value)
                 Hgcolor = ColorCatalog.ColorIndex.Equipment;
-            HerGamble = new EquipmentDef
-            {
-                name = "HERGAMBLE",
-                nameToken = "HERGAMBLE_NAME",
-                pickupToken = "HERGAMBLE_PICKUP",
-                descriptionToken = "HERGAMBLE_DESC",
-                loreToken = "HERGAMBLE_LORE",
-                isLunar = Hbdbt.Value,
-                colorIndex = Hgcolor,
-                pickupIconPath = "@Her_Burden:Assets/Import/herburdenicon/" + Hbiiv.Value + "ItemIcon.png",
-                pickupModelPath = "@Her_Burden:Assets/Import/herburden/her_gamble.prefab",
-                canDrop = true,
-                cooldown = 60f
-            };
-            ExperimentalBuff = new BuffDef
-            {
-                name = "ExperimentalBuff",
-                iconPath = "@Her_Burden:Assets/Import/herburdenicon/" + Hbiiv.Value + "ItemIcon.png"
-            };
-            ExperimentalBuff.buffIndex = BuffAPI.Add(new CustomBuff(ExperimentalBuff));
-            ExperimentalDeBuff = new BuffDef
-            {
-                name = "ExperimentalDeBuff",
-                iconPath = "@Her_Burden:Assets/Import/herburdenicon/" + Hbiiv.Value + "ItemIcon.png"
-            };
-            ExperimentalDeBuff.buffIndex = BuffAPI.Add(new CustomBuff(ExperimentalDeBuff));
+            HerGamble = ScriptableObject.CreateInstance<EquipmentDef>();
+            HerGamble.name = "HERGAMBLE";
+            HerGamble.nameToken = "Her Gamble";
+            HerGamble.pickupToken = HERGAMBLE_PICKUP;
+            HerGamble.descriptionToken = HERGAMBLE_DESC;
+            HerGamble.loreToken = HERGAMBLE_LORE;
+            HerGamble.isLunar = Hbdbt.Value;
+            HerGamble.colorIndex = Hgcolor;
+            HerGamble.pickupIconSprite = Her_Burden.bundle.LoadAsset<Sprite>(Hbiiv.Value + "ItemIcon");
+            HerGamble.pickupModelPrefab = Her_Burden.bundle.LoadAsset<GameObject>("her_gamble");
+            HerGamble.canDrop = true;
+            HerGamble.cooldown = 60f;
+            ExperimentalBuff = ScriptableObject.CreateInstance<BuffDef>();
+            ExperimentalBuff.name = "ExperimentalBuff";
+            ExperimentalBuff.iconSprite = Her_Burden.bundle.LoadAsset<Sprite>(Hbiiv.Value + "ItemIcon");
+            Buffs.RegisterBuff(ExperimentalBuff);
+            ExperimentalDeBuff = ScriptableObject.CreateInstance<BuffDef>();
+            ExperimentalDeBuff.name = "ExperimentalDeBuff";
+            ExperimentalDeBuff.iconSprite = Her_Burden.bundle.LoadAsset<Sprite>(Hbiiv.Value + "ItemIcon");
+            Buffs.RegisterBuff(ExperimentalDeBuff);
             AddTokens();
             AddLocation();
         }
         private static void AddTokens()
         {
             //AssetPlus is deprecated, so I switched it to use the current LanguageAPI
-            LanguageAPI.Add("HERGAMBLE_NAME", "Her Gamble");
             if (Hbdbt.Value)
             {
-                LanguageAPI.Add("HERGAMBLE_PICKUP", "An equipment that gambles your stats");
-                LanguageAPI.Add("HERGAMBLE_DESC", "An equipment that gambles your stats that come from Her Burden Variants");
+                HERGAMBLE_PICKUP = "An equipment that gambles your stats";
+                HERGAMBLE_DESC = "An equipment that gambles your stats that come from Her Burden Variants";
             }
             if (!Hbdbt.Value)
             {
-                LanguageAPI.Add("HERGAMBLE_PICKUP", "Has a chance to double your stats");
-                LanguageAPI.Add("HERGAMBLE_DESC", "Has a chance to double your stats that come from Her Burden Variants");
+                HERGAMBLE_PICKUP = "Has a chance to double your stats";
+                HERGAMBLE_DESC = "Has a chance to double your stats that come from Her Burden Variants";
             }
-            LanguageAPI.Add("HERGAMBLE_LORE", "None");
+            HERGAMBLE_LORE = "None";
 
         }
         public static void AddLocation()
         {
-            var rules = new ItemDisplayRuleDict(null);
-            HerGamble.equipmentIndex = ItemAPI.Add(new CustomEquipment(HerGamble, rules));
+            /*var rules = new ItemDisplayRuleDict(null);
+            HerGamble.equipmentIndex = ItemAPI.Add(new CustomEquipment(HerGamble, rules));*/
+            Pickups.RegisterEquipment(HerGamble);
         }
     }
 }

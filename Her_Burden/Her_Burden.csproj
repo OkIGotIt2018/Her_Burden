@@ -59,15 +59,18 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\ahope\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\..\Downloads\Content Update March\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx, Version=5.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ahope\BepInEx.dll</HintPath>
     </Reference>
+    <Reference Include="EnigmaticThunder">
+      <HintPath>..\..\..\..\Downloads\Content Update March\EnigmaticThunder.dll</HintPath>
+    </Reference>
     <Reference Include="MMHOOK_Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\ahope\MMHOOK_Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\..\Downloads\Content Update March\MMHOOK_Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil, Version=0.10.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -80,10 +83,6 @@
     <Reference Include="MonoMod.Utils, Version=20.8.3.5, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ahope\MonoMod.Utils.dll</HintPath>
-    </Reference>
-    <Reference Include="R2API, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\ahope\R2API.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
