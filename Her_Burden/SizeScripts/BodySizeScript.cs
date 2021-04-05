@@ -41,6 +41,9 @@ namespace Her_Burden
                 case "TREEBOT_BODY_NAME":
                     bodySizeMultiplier = 2;
                     break;
+                case "HERETIC_BODY_NAME":
+                    bodySizeMultiplier = 2;
+                    break;
                 //If there isn't a special rule, default to default
                 default:
                     bodySizeMultiplier = 1;

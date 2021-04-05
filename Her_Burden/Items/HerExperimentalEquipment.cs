@@ -1,6 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using EnigmaticThunder.Modules;
+using BetterAPI;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using RoR2;
@@ -21,6 +21,7 @@ namespace Her_Burden
             var Hgcolor = ColorCatalog.ColorIndex.LunarItem;
             if (!Hbdbt.Value)
                 Hgcolor = ColorCatalog.ColorIndex.Equipment;
+            AddTokens();
             HerGamble = ScriptableObject.CreateInstance<EquipmentDef>();
             HerGamble.name = "HERGAMBLE";
             HerGamble.nameToken = "Her Gamble";
@@ -36,17 +37,15 @@ namespace Her_Burden
             ExperimentalBuff = ScriptableObject.CreateInstance<BuffDef>();
             ExperimentalBuff.name = "ExperimentalBuff";
             ExperimentalBuff.iconSprite = Her_Burden.bundle.LoadAsset<Sprite>(Hbiiv.Value + "ItemIcon");
-            Buffs.RegisterBuff(ExperimentalBuff);
+            Buffs.Add(ExperimentalBuff);
             ExperimentalDeBuff = ScriptableObject.CreateInstance<BuffDef>();
             ExperimentalDeBuff.name = "ExperimentalDeBuff";
             ExperimentalDeBuff.iconSprite = Her_Burden.bundle.LoadAsset<Sprite>(Hbiiv.Value + "ItemIcon");
-            Buffs.RegisterBuff(ExperimentalDeBuff);
-            AddTokens();
+            Buffs.Add(ExperimentalDeBuff);
             AddLocation();
         }
         private static void AddTokens()
         {
-            //AssetPlus is deprecated, so I switched it to use the current LanguageAPI
             if (Hbdbt.Value)
             {
                 HERGAMBLE_PICKUP = "An equipment that gambles your stats";
@@ -62,9 +61,6 @@ namespace Her_Burden
         }
         public static void AddLocation()
         {
-            /*var rules = new ItemDisplayRuleDict(null);
-            HerGamble.equipmentIndex = ItemAPI.Add(new CustomEquipment(HerGamble, rules));*/
-            Pickups.RegisterEquipment(HerGamble);
         }
     }
 }

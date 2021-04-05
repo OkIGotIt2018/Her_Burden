@@ -65,8 +65,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ahope\BepInEx.dll</HintPath>
     </Reference>
-    <Reference Include="EnigmaticThunder">
-      <HintPath>..\..\..\..\Downloads\Content Update March\EnigmaticThunder.dll</HintPath>
+    <Reference Include="BetterAPI">
+      <HintPath>..\..\..\..\Downloads\Content Update March\BetterAPI.dll</HintPath>
     </Reference>
     <Reference Include="MMHOOK_Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

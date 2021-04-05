@@ -13,10 +13,15 @@ using Object = System.Object;
 using UnityObject = UnityEngine.Object;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security;
+using System.Security.Permissions;
+
+[module: UnverifiableCode]
+[assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
 
 namespace Her_Burden
 {
-    [BepInDependency(EnigmaticThunder.EnigmaticThunder.guid, EnigmaticThunder.EnigmaticThunder.version)]
+    [BepInDependency("com.xoxfaby.BetterAPI")]
     [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.4.4")]
 
     public class Her_Burden : BaseUnityPlugin
@@ -39,6 +44,7 @@ namespace Her_Burden
         public static ConfigEntry<bool> Hbdbt { get; set; }
         public static ConfigEntry<bool> Hbvst { get; set; }
         public static ConfigEntry<bool> Hbvsm { get; set; }
+        public static ConfigEntry<bool> Hbnsfw { get; set; }
         public static ConfigEntry<string> Hbiiv { get; set; }
         public static ConfigEntry<string> Hbvos { get; set; }
         public static ConfigEntry<float> Hbims { get; set; }
@@ -47,23 +53,23 @@ namespace Her_Burden
         public static ConfigEntry<int> Hbedc { get; set; }
         public static ConfigEntry<float> Hbbuff { get; set; }
         public static ConfigEntry<float> Hbdebuff { get; set; }
-        //The Awake() method is run at the very start when the game is initialized.
         public void Awake()
         {
-            Hbisos = Config.Bind<bool>("Her Burden Toggle", "Toggle Item Visibility", true, "Changes if Her Burden Variants shows on the Survivor");
-            Hbpul = Config.Bind<bool>("Her Burden Toggle", "Toggle Luck Effect", false, "Changes if luck effects chance to pickup Her Burden Variants once you have one");
-            Hbgoi = Config.Bind<bool>("Her Burden Toggle", "Toggle Give Original Item", false, "Changes if you also get the original item along with a Her Burden Variant");
-            Hbdbt = Config.Bind<bool>("Her Burden Toggle", "Toggle Debuffs", true, "Changes if debuffs are applied or not, if disabled, Her Burden Variants changes to legendary and makes it have a chance to drop on kill");
-            Hbvst = Config.Bind<bool>("Her Burden Toggle", "Toggle Variant Drop Count", true, "Changes if all Her Burden Variants are in the drop list or just Her Burden, if disabled, only Her Burden is in the drop list");
-            Hbvsm = Config.Bind<bool>("Her Burden Toggle", "Toggle Variants Affect Size", false, "Changes if all Her Burden Variants increase item display size");
-            Hbiiv = Config.Bind<string>("Her Burden General", "Artist", "Hush", "Decides what artist to use, \"Hush\" or \"aka6\".");
-            Hbvos = Config.Bind<string>("Her Burden General", "Variant Shown on Survivor", "Burden", "Changes what Variant is shown on the Survivor, \"Burden\" \"Recluse\" \"Fury\" \"Torpor\" \"Rancor\" \"Panic\".");
-            Hbims = Config.Bind<float>("Her Burden Size", "Max size of the item", 2, "Changes the max size of the item on the Survivor");
-            Hbimssm = Config.Bind<float>("Her Burden Size", "Size Multiplier for the item", 0.049375f, "Changes the rate that the item size increases by");
-            Hbcpu = Config.Bind<int>("Her Burden Mechanics", "Chance to change pickup to Her Burden Variants", 100, "Chance to change other items to Her Burden Variants on pickup once you have one");
-            Hbedc = Config.Bind<int>("Her Burden Mechanics", "Chance for enemies to drop Her Burden Variants", 5, "Chance for enemies top drop Her Burden Variants once you have one");
-            Hbbuff = Config.Bind<float>("Her Burden Mechanics", "Buff", 1.05f, "Changes the increase of buff of the item per item exponentially");
-            Hbdebuff = Config.Bind<float>("Her Burden Mechanics", "Debuff", 0.975f, "Changes the decrease of debuff of the item per item exponentially");
+            Hbisos = Config.Bind<bool>("1. Her Burden Toggle", "Toggle Item Visibility", true, "Changes if Her Burden Variants shows on the Survivor");
+            Hbpul = Config.Bind<bool>("1. Her Burden Toggle", "Toggle Luck Effect", false, "Changes if luck effects chance to pickup Her Burden Variants once you have one");
+            Hbgoi = Config.Bind<bool>("1. Her Burden Toggle", "Toggle Give Original Item", false, "Changes if you also get the original item along with a Her Burden Variant");
+            Hbdbt = Config.Bind<bool>("1. Her Burden Toggle", "Toggle Debuffs", true, "Changes if debuffs are applied or not, if disabled, Her Burden Variants changes to legendary and makes it have a chance to drop on kill");
+            Hbvst = Config.Bind<bool>("1. Her Burden Toggle", "Toggle Variant Drop Count", true, "Changes if all Her Burden Variants are in the drop list or just Her Burden, if disabled, only Her Burden is in the drop list");
+            Hbvsm = Config.Bind<bool>("2. Her Burden Toggle", "Toggle Variants Affect Size", false, "Changes if other Her Burden Variants increase item display size");
+            Hbnsfw = Config.Bind<bool>("0. Her Burden NSFW Toggle", "Toggles Her Burden NSFW", true, "Changes if Her Burden is NSFW or SFW, if disabled, Her Burden will have SFW models when released");
+            Hbiiv = Config.Bind<string>("2. Her Burden General", "Artist", "Hush", "Decides what artist to use, \"Hush\" or \"aka6\".");
+            Hbvos = Config.Bind<string>("2. Her Burden General", "Variant Shown on Survivor", "Burden", "Changes what Variant is shown on the Survivor, \"Burden\" \"Recluse\" \"Fury\" \"Torpor\" \"Rancor\" \"Panic\".");
+            Hbims = Config.Bind<float>("1. Her Burden Size", "Max size of the item", 2, "Changes the max size of the item on the Survivor");
+            Hbimssm = Config.Bind<float>("1. Her Burden Size", "Size Multiplier for the item", 0.049375f, "Changes the rate that the item size increases by");
+            Hbcpu = Config.Bind<int>("1. Her Burden Mechanics", "Chance to change pickup to Her Burden Variants", 100, "Chance to change other items to Her Burden Variants on pickup once you have one");
+            Hbedc = Config.Bind<int>("1. Her Burden Mechanics", "Chance for enemies to drop Her Burden Variants", 5, "Chance for enemies top drop Her Burden Variants once you have one");
+            Hbbuff = Config.Bind<float>("1. Her Burden Mechanics", "Buff", 1.05f, "Changes the increase of buff of the item per item exponentially");
+            Hbdebuff = Config.Bind<float>("1. Her Burden Mechanics", "Debuff", 0.975f, "Changes the decrease of debuff of the item per item exponentially");
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Her_Burden.Resources.herburden"))
             {
                 bundle = AssetBundle.LoadFromStream(stream);
@@ -83,6 +89,7 @@ namespace Her_Burden
             HerGambleEquipment.Init();
             HerCurseArtifact.Init();
 
+            On.RoR2.ContentManager.SetContentPacks += ContentManager_SetContentPacks;
 
             //maxHealth-moveSpeed   Her Burden
             //armor-regen           Her Recluse
@@ -90,19 +97,6 @@ namespace Her_Burden
             //regen-attackSpeed     Her Torpor
             //damage-armor          Her Rancor
             //moveSpeed-damage      Her Panic
-
-            if (Hbvos.Value == "Burden")
-                VariantOnSurvivor = HerBurden.itemIndex;
-            else if (Hbvos.Value == "Recluse")
-                VariantOnSurvivor = HerRecluse.itemIndex;
-            else if (Hbvos.Value == "Fury")
-                VariantOnSurvivor = HerFury.itemIndex;
-            else if (Hbvos.Value == "Torpor")
-                VariantOnSurvivor = HerTorpor.itemIndex;
-            else if (Hbvos.Value == "Rancor")
-                VariantOnSurvivor = HerRancor.itemIndex;
-            else if (Hbvos.Value == "Panic")
-                VariantOnSurvivor = HerPanic.itemIndex;
 
             On.RoR2.GenericPickupController.GrantItem += (orig, self, body, inventory) =>
             {
@@ -112,15 +106,14 @@ namespace Her_Burden
 
 
                     //Handle the size change with scripts
-                    /* Enable me!
-                    if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true)
+                    if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true && !LocalUserManager.GetFirstLocalUser().cachedMasterController.master.bodyPrefab.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet.GetItemDisplayRuleGroup(VariantOnSurvivor).isEmpty)
                     {
                         body.gameObject.AddComponent<BodySizeScript>();
                         body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
-                    }*/
+                    }
                     return;
                 }
-                if (Hbvst.Value && Hbdbt.Value)
+                if (/*Hbvst.Value && */Hbdbt.Value)
                 {
                     bool changepickup = false;
                     if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 || body.inventory.GetItemCount(HerRecluse.itemIndex) > 0 || body.inventory.GetItemCount(HerFury.itemIndex) > 0 || body.inventory.GetItemCount(HerTorpor.itemIndex) > 0 || body.inventory.GetItemCount(HerRancor.itemIndex) > 0 || body.inventory.GetItemCount(HerPanic.itemIndex) > 0)
@@ -167,7 +160,7 @@ namespace Her_Burden
                         }
                     }
                 }
-                if (!Hbvst.Value && Hbdbt.Value)
+                /*if (!Hbvst.Value && Hbdbt.Value)
                 {
                     bool changepickup = false;
                     if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0 || body.inventory.GetItemCount(HerRecluse.itemIndex) > 0 || body.inventory.GetItemCount(HerFury.itemIndex) > 0 || body.inventory.GetItemCount(HerTorpor.itemIndex) > 0 || body.inventory.GetItemCount(HerRancor.itemIndex) > 0 || body.inventory.GetItemCount(HerPanic.itemIndex) > 0)
@@ -193,42 +186,42 @@ namespace Her_Burden
                     {
                         self.pickupIndex = PickupCatalog.FindPickupIndex(HerBurden.itemIndex);
                     }
-                }
+                }*/
                 orig(self, body, inventory);
 
 
                 //Handle the size change with scripts
-                /* Enable me!
-                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true)
+                bool noItemDisplay = LocalUserManager.GetFirstLocalUser().cachedMasterController.master.bodyPrefab.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet.GetItemDisplayRuleGroup(VariantOnSurvivor).isEmpty;
+                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true && !noItemDisplay)
                 {
                     body.gameObject.AddComponent<BodySizeScript>();
                     body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
-                }*/
+                }
             };
             WhoKnows();
-            if (!Hbvst.Value)
+            /*if (!Hbvst.Value)
             {
                 On.RoR2.Run.BuildDropTable += (orig, self) =>
                 {
                     if (Hbdbt.Value)
                     {
-                        /*ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Lunar, HerFury.itemIndex);
+                        ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Lunar, HerFury.itemIndex);
                         ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Lunar, HerPanic.itemIndex);
                         ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Lunar, HerRancor.itemIndex);
                         ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Lunar, HerRecluse.itemIndex);
-                        ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Lunar, HerTorpor.itemIndex);*/
+                        ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Lunar, HerTorpor.itemIndex);
                     }
                     if (!Hbdbt.Value)
                     {
-                        /*ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Tier3, HerFury.itemIndex);
+                        ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Tier3, HerFury.itemIndex);
                         ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Tier3, HerPanic.itemIndex);
                         ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Tier3, HerRancor.itemIndex);
                         ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Tier3, HerRecluse.itemIndex);
-                        ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Tier3, HerTorpor.itemIndex);*/
+                        ItemDropAPI.RemoveFromDefaultByTier(ItemTier.Tier3, HerTorpor.itemIndex);
                     }
                     orig(self);
                 };
-            }
+            }*/
             On.RoR2.CharacterBody.Update += CharacterBody_Update;
             On.RoR2.CharacterMaster.OnBodyStart += CharacterMaster_OnBodyStart;
             On.EntityStates.Duplicator.Duplicating.OnEnter += Duplicating_OnEnter;
@@ -239,23 +232,52 @@ namespace Her_Burden
             On.RoR2.CharacterMaster.RespawnExtraLife += CharacterMaster_RespawnExtraLife;
         }
 
+        public void Start()
+        {
+            if (Hbvos.Value == "Burden")
+                VariantOnSurvivor = HerBurden.itemIndex;
+            else if (Hbvos.Value == "Recluse")
+                VariantOnSurvivor = HerRecluse.itemIndex;
+            else if (Hbvos.Value == "Fury")
+                VariantOnSurvivor = HerFury.itemIndex;
+            else if (Hbvos.Value == "Torpor")
+                VariantOnSurvivor = HerTorpor.itemIndex;
+            else if (Hbvos.Value == "Rancor")
+                VariantOnSurvivor = HerRancor.itemIndex;
+            else if (Hbvos.Value == "Panic")
+                VariantOnSurvivor = HerPanic.itemIndex;
+        }
+
+        private static void ContentManager_SetContentPacks(On.RoR2.ContentManager.orig_SetContentPacks orig, List<ContentPack> newContentPacks)
+        {
+            ContentPack contentPack = new ContentPack();
+            List<EquipmentDef> equipmentDefs = new List<EquipmentDef> { HerGamble };
+            List<ArtifactDef> artifactDefs = new List<ArtifactDef> { HerCurse };
+            contentPack.equipmentDefs = equipmentDefs.ToArray();
+            contentPack.artifactDefs = artifactDefs.ToArray();
+            newContentPacks.Add(contentPack);
+            orig(newContentPacks);
+        }
+
         private void CharacterMaster_RespawnExtraLife(On.RoR2.CharacterMaster.orig_RespawnExtraLife orig, CharacterMaster self)
         {
-            /* Enable me!
+            bool noItemDisplay = LocalUserManager.GetFirstLocalUser().cachedMasterController.master.bodyPrefab.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet.GetItemDisplayRuleGroup(VariantOnSurvivor).isEmpty;
+
             CharacterBody body = self.GetBody();
-            if (body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true)
-                DestroyImmediate(body.gameObject.GetComponent<BodySizeScript>());*/
+            if (body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true && !noItemDisplay)
+                DestroyImmediate(body.gameObject.GetComponent<BodySizeScript>());
             orig(self);
-            /* Enable me!
+
+            noItemDisplay = LocalUserManager.GetFirstLocalUser().cachedMasterController.master.bodyPrefab.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet.GetItemDisplayRuleGroup(VariantOnSurvivor).isEmpty;
             if (self.playerCharacterMasterController)
             {
-                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true)
+                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true && !noItemDisplay)
                 {
                     body.gameObject.AddComponent<BodySizeScript>();
                     body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
                     body.gameObject.GetComponent<BodySizeScript>().UpdateStacks(body.inventory.GetItemCount(VariantOnSurvivor));
                 }
-            }*/
+            }
         }
 
         private void PickupDropletController_CreatePickupDroplet(On.RoR2.PickupDropletController.orig_CreatePickupDroplet orig, PickupIndex pickupIndex, Vector3 position, Vector3 velocity)
@@ -266,7 +288,7 @@ namespace Her_Burden
             bool blacklist = false;
             if (pickupIndex == PickupCatalog.FindPickupIndex("ArtifactKey") || pickupIndex == PickupCatalog.FindPickupIndex("LunarTrinket"))
                 blacklist = true;
-            if (RunArtifactManager.instance.IsArtifactEnabled(HerCurse) && PickupCatalog.GetPickupDef(pickupIndex).itemIndex != ItemIndex.None && !burdenvariant && Hbvst.Value && !blacklist)
+            if (RunArtifactManager.instance.IsArtifactEnabled(HerCurse) && PickupCatalog.GetPickupDef(pickupIndex).itemIndex != ItemIndex.None && !burdenvariant/* && Hbvst.Value*/ && !blacklist)
             {
                 switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
                 {
@@ -291,7 +313,7 @@ namespace Her_Burden
                 }
                 return;
             }
-            if (RunArtifactManager.instance.IsArtifactEnabled(HerCurse) && PickupCatalog.GetPickupDef(pickupIndex).itemIndex != ItemIndex.None && !burdenvariant && !Hbvst.Value && !blacklist)
+            /*if (RunArtifactManager.instance.IsArtifactEnabled(HerCurse) && PickupCatalog.GetPickupDef(pickupIndex).itemIndex != ItemIndex.None && !burdenvariant && !Hbvst.Value && !blacklist)
             {
                 PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerBurden.itemIndex), position, velocity);
                 return;
@@ -320,7 +342,7 @@ namespace Her_Burden
                         break;
                 }
                 return;
-            }
+            }*/
             orig(pickupIndex, position, velocity);
         }
 
@@ -345,9 +367,9 @@ namespace Her_Burden
                 CheckRollTrue = Util.CheckRoll(Hbedc.Value, report.attackerBody.master);
             else
                 CheckRollTrue = Util.CheckRoll(Hbedc.Value);
-            if (CheckRollTrue && !Hbvst.Value)
-                PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerBurden.itemIndex), report.victimBody.corePosition, Vector3.up * 20f);
-            if (CheckRollTrue && Hbvst.Value)
+            /*if (CheckRollTrue && !Hbvst.Value)
+                PickupDropletController.CreatePickupDroplet(PickupCatalog.FindPickupIndex(HerBurden.itemIndex), report.victimBody.corePosition, Vector3.up * 20f);*/
+            if (CheckRollTrue/* && Hbvst.Value*/)
             {
                 {
                     switch (Mathf.FloorToInt(UnityRandom.Range(0, 6)))
@@ -430,7 +452,10 @@ namespace Her_Burden
                 orig(self);
                 return;
             }
-            CharacterBody body = PlayerCharacterMasterController.instances[0].master.GetBody();
+            var lastActivator = self.GetComponent<PurchaseInteraction>().lastActivator;
+            if (!lastActivator)
+                return;
+            var body = lastActivator.GetComponent<CharacterBody>();
             int itemcount = 0;
             List<ItemIndex> items = new List<ItemIndex>();
             if (body.inventory.GetItemCount(HerBurden.itemIndex) > 0)
@@ -479,23 +504,23 @@ namespace Her_Burden
         private void CharacterMaster_OnBodyStart(On.RoR2.CharacterMaster.orig_OnBodyStart orig, CharacterMaster self, CharacterBody body)
         {
             orig(self, body);
-            /* Enable me!
+            bool noItemDisplay = LocalUserManager.GetFirstLocalUser().cachedMasterController.master.bodyPrefab.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet.GetItemDisplayRuleGroup(VariantOnSurvivor).isEmpty;
             if (self.playerCharacterMasterController)
             {
-                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true)
+                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true && !noItemDisplay)
                 {
                     body.gameObject.AddComponent<BodySizeScript>();
                     body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
                 }
-            }*/
+            }
         }
 
         //This hook just updates the stack count
         private void CharacterBody_Update(On.RoR2.CharacterBody.orig_Update orig, CharacterBody self)
         {
             orig(self);
-            /* Enable me!
-            if (self.gameObject.GetComponent<BodySizeScript>() && self.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true)
+            bool noItemDisplay = LocalUserManager.GetFirstLocalUser().cachedMasterController.master.bodyPrefab.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet.GetItemDisplayRuleGroup(VariantOnSurvivor).isEmpty;
+            if (self.gameObject.GetComponent<BodySizeScript>() && self.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true && !noItemDisplay)
             {
                 if (Hbvsm.Value == true)
                 {
@@ -505,10 +530,10 @@ namespace Her_Burden
                 }
                 else if (Hbvsm.Value == false)
                 {
-                    self.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(self.baseNameToken);
-                    self.gameObject.GetComponent<BodySizeScript>().UpdateStacks(self.inventory.GetItemCount(VariantOnSurvivor));
+                self.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(self.baseNameToken);
+                self.gameObject.GetComponent<BodySizeScript>().UpdateStacks(self.inventory.GetItemCount(VariantOnSurvivor));
                 }
-            }*/
+            }
         }
 
         public void WhoKnows()
