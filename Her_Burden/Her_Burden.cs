@@ -15,6 +15,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security;
 using System.Security.Permissions;
+using RoR2.ContentManagement;
 
 [module: UnverifiableCode]
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
@@ -22,7 +23,7 @@ using System.Security.Permissions;
 namespace Her_Burden
 {
     [BepInDependency("com.xoxfaby.BetterAPI")]
-    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.4.4")]
+    [BepInPlugin("com.OkIgotIt.Her_Burden", "Her_Burden", "1.4.6")]
 
     public class Her_Burden : BaseUnityPlugin
     {
@@ -37,7 +38,7 @@ namespace Her_Burden
         public static BuffDef ExperimentalBuff;
         public static BuffDef ExperimentalDeBuff;
         public static ArtifactDef HerCurse;
-        public static ItemIndex VariantOnSurvivor;
+        public static ItemDef VariantOnSurvivor;
         public static ConfigEntry<bool> Hbisos { get; set; }
         public static ConfigEntry<bool> Hbpul { get; set; }
         public static ConfigEntry<bool> Hbgoi { get; set; }
@@ -63,7 +64,7 @@ namespace Her_Burden
             Hbvsm = Config.Bind<bool>("2. Her Burden Toggle", "Toggle Variants Affect Size", false, "Changes if other Her Burden Variants increase item display size");
             Hbnsfw = Config.Bind<bool>("0. Her Burden NSFW Toggle", "Toggles Her Burden NSFW", true, "Changes if Her Burden is NSFW or SFW, if disabled, Her Burden will have SFW models when released");
             Hbiiv = Config.Bind<string>("2. Her Burden General", "Artist", "Hush", "Decides what artist to use, \"Hush\" or \"aka6\".");
-            Hbvos = Config.Bind<string>("2. Her Burden General", "Variant Shown on Survivor", "Burden", "Changes what Variant is shown on the Survivor, \"Burden\" \"Recluse\" \"Fury\" \"Torpor\" \"Rancor\" \"Panic\".");
+            Hbvos = Config.Bind<string>("2. Her Burden General", "Variant Size Increase", "Burden", "Changes what Variant gets its size increased, \"Burden\" \"Recluse\" \"Fury\" \"Torpor\" \"Rancor\" \"Panic\".");
             Hbims = Config.Bind<float>("1. Her Burden Size", "Max size of the item", 2, "Changes the max size of the item on the Survivor");
             Hbimssm = Config.Bind<float>("1. Her Burden Size", "Size Multiplier for the item", 0.049375f, "Changes the rate that the item size increases by");
             Hbcpu = Config.Bind<int>("1. Her Burden Mechanics", "Chance to change pickup to Her Burden Variants", 100, "Chance to change other items to Her Burden Variants on pickup once you have one");
@@ -89,7 +90,7 @@ namespace Her_Burden
             HerGambleEquipment.Init();
             HerCurseArtifact.Init();
 
-            On.RoR2.ContentManager.SetContentPacks += ContentManager_SetContentPacks;
+            ContentManager.collectContentPackProviders += ContentManager_collectContentPackProviders;
 
             //maxHealth-moveSpeed   Her Burden
             //armor-regen           Her Recluse
@@ -106,11 +107,8 @@ namespace Her_Burden
 
 
                     //Handle the size change with scripts
-                    if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true && !LocalUserManager.GetFirstLocalUser().cachedMasterController.master.bodyPrefab.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet.GetItemDisplayRuleGroup(VariantOnSurvivor).isEmpty)
-                    {
-                        body.gameObject.AddComponent<BodySizeScript>();
-                        body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
-                    }
+                    Size(1, body, false);
+                    Size(2, body, false);
                     return;
                 }
                 if (/*Hbvst.Value && */Hbdbt.Value)
@@ -121,10 +119,10 @@ namespace Her_Burden
                     bool blacklist = false;
                     if (Hbdbt.Value == false)
                         blacklist = true;
-                    if (self.pickupIndex == PickupCatalog.FindPickupIndex(HerBurden.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerRecluse.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerFury.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerTorpor.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerRancor.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerPanic.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex("ScrapWhite") || self.pickupIndex == PickupCatalog.FindPickupIndex("ScrapGreen") || self.pickupIndex == PickupCatalog.FindPickupIndex("ScrapRed") || self.pickupIndex == PickupCatalog.FindPickupIndex("ScrapYellow") || self.pickupIndex == PickupCatalog.FindPickupIndex("ArtifactKey") || self.pickupIndex == PickupCatalog.FindPickupIndex("LunarTrinket"))
+                    if (self.pickupIndex == PickupCatalog.FindPickupIndex(HerBurden.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerRecluse.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerFury.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerTorpor.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerRancor.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(HerPanic.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(RoR2Content.Items.ScrapWhite.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(RoR2Content.Items.ScrapGreen.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(RoR2Content.Items.ScrapRed.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(RoR2Content.Items.ScrapYellow.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(RoR2Content.Items.ArtifactKey.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(RoR2Content.Items.LunarTrinket.itemIndex))
                         blacklist = true;
                     if (blacklist == false && Hbgoi.Value == true)
-                        if (self.pickupIndex == PickupCatalog.FindPickupIndex("Pearl") || self.pickupIndex == PickupCatalog.FindPickupIndex("ShinyPearl"))
+                        if (self.pickupIndex == PickupCatalog.FindPickupIndex(RoR2Content.Items.Pearl.itemIndex) || self.pickupIndex == PickupCatalog.FindPickupIndex(RoR2Content.Items.ShinyPearl.itemIndex))
                             blacklist = true;
 
                     bool CheckRollTrue;
@@ -191,12 +189,8 @@ namespace Her_Burden
 
 
                 //Handle the size change with scripts
-                bool noItemDisplay = LocalUserManager.GetFirstLocalUser().cachedMasterController.master.bodyPrefab.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet.GetItemDisplayRuleGroup(VariantOnSurvivor).isEmpty;
-                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true && !noItemDisplay)
-                {
-                    body.gameObject.AddComponent<BodySizeScript>();
-                    body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
-                }
+                Size(1, body, false);
+                Size(2, body, false);
             };
             WhoKnows();
             /*if (!Hbvst.Value)
@@ -235,48 +229,35 @@ namespace Her_Burden
         public void Start()
         {
             if (Hbvos.Value == "Burden")
-                VariantOnSurvivor = HerBurden.itemIndex;
+                VariantOnSurvivor = HerBurden;
             else if (Hbvos.Value == "Recluse")
-                VariantOnSurvivor = HerRecluse.itemIndex;
+                VariantOnSurvivor = HerRecluse;
             else if (Hbvos.Value == "Fury")
-                VariantOnSurvivor = HerFury.itemIndex;
+                VariantOnSurvivor = HerFury;
             else if (Hbvos.Value == "Torpor")
-                VariantOnSurvivor = HerTorpor.itemIndex;
+                VariantOnSurvivor = HerTorpor;
             else if (Hbvos.Value == "Rancor")
-                VariantOnSurvivor = HerRancor.itemIndex;
+                VariantOnSurvivor = HerRancor;
             else if (Hbvos.Value == "Panic")
-                VariantOnSurvivor = HerPanic.itemIndex;
+                VariantOnSurvivor = HerPanic;
         }
 
-        private static void ContentManager_SetContentPacks(On.RoR2.ContentManager.orig_SetContentPacks orig, List<ContentPack> newContentPacks)
+        private void ContentManager_collectContentPackProviders(ContentManager.AddContentPackProviderDelegate addContentPackProvider)
         {
-            ContentPack contentPack = new ContentPack();
-            List<EquipmentDef> equipmentDefs = new List<EquipmentDef> { HerGamble };
-            List<ArtifactDef> artifactDefs = new List<ArtifactDef> { HerCurse };
-            contentPack.equipmentDefs = equipmentDefs.ToArray();
-            contentPack.artifactDefs = artifactDefs.ToArray();
-            newContentPacks.Add(contentPack);
-            orig(newContentPacks);
+            addContentPackProvider(new Content());
         }
 
         private void CharacterMaster_RespawnExtraLife(On.RoR2.CharacterMaster.orig_RespawnExtraLife orig, CharacterMaster self)
         {
-            bool noItemDisplay = LocalUserManager.GetFirstLocalUser().cachedMasterController.master.bodyPrefab.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet.GetItemDisplayRuleGroup(VariantOnSurvivor).isEmpty;
-
             CharacterBody body = self.GetBody();
-            if (body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true && !noItemDisplay)
-                DestroyImmediate(body.gameObject.GetComponent<BodySizeScript>());
+            Size(3, body, true);
+            Size(4, body, true);
             orig(self);
 
-            noItemDisplay = LocalUserManager.GetFirstLocalUser().cachedMasterController.master.bodyPrefab.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet.GetItemDisplayRuleGroup(VariantOnSurvivor).isEmpty;
             if (self.playerCharacterMasterController)
             {
-                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true && !noItemDisplay)
-                {
-                    body.gameObject.AddComponent<BodySizeScript>();
-                    body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
-                    body.gameObject.GetComponent<BodySizeScript>().UpdateStacks(body.inventory.GetItemCount(VariantOnSurvivor));
-                }
+                Size(5, body, false);
+                Size(6, body, false);
             }
         }
 
@@ -286,7 +267,7 @@ namespace Her_Burden
             if (pickupIndex == PickupCatalog.FindPickupIndex(HerBurden.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerRecluse.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerFury.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerTorpor.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerRancor.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(HerPanic.itemIndex))
                 burdenvariant = true;
             bool blacklist = false;
-            if (pickupIndex == PickupCatalog.FindPickupIndex("ArtifactKey") || pickupIndex == PickupCatalog.FindPickupIndex("LunarTrinket"))
+            if (pickupIndex == PickupCatalog.FindPickupIndex(RoR2Content.Items.ArtifactKey.itemIndex) || pickupIndex == PickupCatalog.FindPickupIndex(RoR2Content.Items.LunarTrinket.itemIndex))
                 blacklist = true;
             if (RunArtifactManager.instance.IsArtifactEnabled(HerCurse) && PickupCatalog.GetPickupDef(pickupIndex).itemIndex != ItemIndex.None && !burdenvariant/* && Hbvst.Value*/ && !blacklist)
             {
@@ -504,14 +485,10 @@ namespace Her_Burden
         private void CharacterMaster_OnBodyStart(On.RoR2.CharacterMaster.orig_OnBodyStart orig, CharacterMaster self, CharacterBody body)
         {
             orig(self, body);
-            bool noItemDisplay = LocalUserManager.GetFirstLocalUser().cachedMasterController.master.bodyPrefab.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet.GetItemDisplayRuleGroup(VariantOnSurvivor).isEmpty;
             if (self.playerCharacterMasterController)
             {
-                if (!body.gameObject.GetComponent<BodySizeScript>() && body.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true && !noItemDisplay)
-                {
-                    body.gameObject.AddComponent<BodySizeScript>();
-                    body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
-                }
+                Size(1, body, false);
+                Size(2, body, false);
             }
         }
 
@@ -519,23 +496,169 @@ namespace Her_Burden
         private void CharacterBody_Update(On.RoR2.CharacterBody.orig_Update orig, CharacterBody self)
         {
             orig(self);
-            bool noItemDisplay = LocalUserManager.GetFirstLocalUser().cachedMasterController.master.bodyPrefab.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet.GetItemDisplayRuleGroup(VariantOnSurvivor).isEmpty;
-            if (self.gameObject.GetComponent<BodySizeScript>() && self.inventory.GetItemCount(VariantOnSurvivor) > 0 && Hbisos.Value == true && !noItemDisplay)
+            if (Hbvsm.Value == true)
+                Size(9, self, true);
+            else if (Hbvsm.Value == false)
+                Size(7, self, true);
+            Size(8, self, true);
+        }
+        public void Size(int operation, CharacterBody body, bool truefalse)
+        {
+            if (Hbisos.Value == false)
+                return;
+            if (!LocalUserManager.GetFirstLocalUser().cachedMasterController.master.bodyPrefab.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet)
+                return;
+            if (LocalUserManager.GetFirstLocalUser().cachedMasterController.master.bodyPrefab.GetComponentInChildren<CharacterModel>().itemDisplayRuleSet.GetItemDisplayRuleGroup(VariantOnSurvivor.itemIndex).isEmpty)
+                return;
+
+            if (operation % 2 == 1)
             {
-                if (Hbvsm.Value == true)
-                {
-                    int total = self.inventory.GetItemCount(HerBurden.itemIndex) + self.inventory.GetItemCount(HerRecluse.itemIndex) + self.inventory.GetItemCount(HerFury.itemIndex) + self.inventory.GetItemCount(HerTorpor.itemIndex) + self.inventory.GetItemCount(HerRancor.itemIndex) + self.inventory.GetItemCount(HerPanic.itemIndex);
-                    self.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(self.baseNameToken);
-                    self.gameObject.GetComponent<BodySizeScript>().UpdateStacks(total);
-                }
-                else if (Hbvsm.Value == false)
-                {
-                self.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(self.baseNameToken);
-                self.gameObject.GetComponent<BodySizeScript>().UpdateStacks(self.inventory.GetItemCount(VariantOnSurvivor));
-                }
+                if (truefalse)
+                    if (!body.gameObject.GetComponent<BodySizeScript>())
+                        return;
+                if (!truefalse)
+                    if (body.gameObject.GetComponent<BodySizeScript>())
+                        return;
+            }
+            if (operation % 2 == 0)
+            {
+                if (truefalse)
+                    if (!body.gameObject.GetComponent<FakeBodySizeScript>())
+                        return;
+                if (!truefalse)
+                    if (body.gameObject.GetComponent<FakeBodySizeScript>())
+                        return;
+            }
+
+            int burdenCount = 0;
+            if (VariantOnSurvivor != HerBurden)
+                burdenCount = body.inventory.GetItemCount(HerBurden.itemIndex);
+            int recluseCount = 0;
+            if (VariantOnSurvivor != HerRecluse)
+                recluseCount = body.inventory.GetItemCount(HerRecluse.itemIndex);
+            int furyCount = 0;
+            if (VariantOnSurvivor != HerFury)
+                furyCount = body.inventory.GetItemCount(HerFury.itemIndex);
+            int torporCount = 0;
+            if (VariantOnSurvivor != HerTorpor)
+                torporCount = body.inventory.GetItemCount(HerTorpor.itemIndex);
+            int rancorCount = 0;
+            if (VariantOnSurvivor != HerRancor)
+                rancorCount = body.inventory.GetItemCount(HerRancor.itemIndex);
+            int panicCount = 0;
+            if (VariantOnSurvivor != HerPanic)
+                panicCount = body.inventory.GetItemCount(HerPanic.itemIndex);
+
+            if (operation % 2 == 1)
+                if (body.inventory.GetItemCount(VariantOnSurvivor) == 0)
+                    return;
+            if (operation % 2 == 0)
+                if (burdenCount == 0 && recluseCount == 0 && furyCount == 0 && torporCount == 0 && rancorCount == 0 && panicCount == 0)
+                    return;
+
+            switch (operation)
+            {
+                case 1:
+                    body.gameObject.AddComponent<BodySizeScript>();
+                    body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
+                    break;
+                case 2:
+                    body.gameObject.AddComponent<FakeBodySizeScript>();
+                    body.gameObject.GetComponent<FakeBodySizeScript>().SetBodyMultiplier(body.baseNameToken, body);
+                    break;
+                case 3:
+                    DestroyImmediate(body.gameObject.GetComponent<BodySizeScript>());
+                    break;
+                case 4:
+                    DestroyImmediate(body.gameObject.GetComponent<FakeBodySizeScript>());
+                    break;
+                case 5:
+                    body.gameObject.AddComponent<BodySizeScript>();
+                    body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
+                    body.gameObject.GetComponent<BodySizeScript>().UpdateStacks(body.inventory.GetItemCount(VariantOnSurvivor));
+                    break;
+                case 6:
+                    if (burdenCount > 0)
+                    {
+                        body.gameObject.AddComponent<FakeBodySizeScript>();
+                        body.gameObject.GetComponent<FakeBodySizeScript>().SetBodyMultiplier(body.baseNameToken, body);
+                        body.gameObject.GetComponent<FakeBodySizeScript>().UpdateStacks(body.inventory.GetItemCount(HerBurden.itemIndex), body);
+                    }
+                    if (recluseCount > 0)
+                    {
+                        body.gameObject.AddComponent<FakeBodySizeScript>();
+                        body.gameObject.GetComponent<FakeBodySizeScript>().SetBodyMultiplier(body.baseNameToken, body);
+                        body.gameObject.GetComponent<FakeBodySizeScript>().UpdateStacks(body.inventory.GetItemCount(HerRecluse.itemIndex), body);
+                    }
+                    if (furyCount > 0)
+                    {
+                        body.gameObject.AddComponent<FakeBodySizeScript>();
+                        body.gameObject.GetComponent<FakeBodySizeScript>().SetBodyMultiplier(body.baseNameToken, body);
+                        body.gameObject.GetComponent<FakeBodySizeScript>().UpdateStacks(body.inventory.GetItemCount(HerFury.itemIndex), body);
+                    }
+                    if (torporCount > 0)
+                    {
+                        body.gameObject.AddComponent<FakeBodySizeScript>();
+                        body.gameObject.GetComponent<FakeBodySizeScript>().SetBodyMultiplier(body.baseNameToken, body);
+                        body.gameObject.GetComponent<FakeBodySizeScript>().UpdateStacks(body.inventory.GetItemCount(HerTorpor.itemIndex), body);
+                    }
+                    if (rancorCount > 0)
+                    {
+                        body.gameObject.AddComponent<FakeBodySizeScript>();
+                        body.gameObject.GetComponent<FakeBodySizeScript>().SetBodyMultiplier(body.baseNameToken, body);
+                        body.gameObject.GetComponent<FakeBodySizeScript>().UpdateStacks(body.inventory.GetItemCount(HerRancor.itemIndex), body);
+                    }
+                    if (panicCount > 0)
+                    {
+                        body.gameObject.AddComponent<FakeBodySizeScript>();
+                        body.gameObject.GetComponent<FakeBodySizeScript>().SetBodyMultiplier(body.baseNameToken, body);
+                        body.gameObject.GetComponent<FakeBodySizeScript>().UpdateStacks(body.inventory.GetItemCount(HerPanic.itemIndex), body);
+                    }
+                    break;
+                case 7:
+                    body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
+                    body.gameObject.GetComponent<BodySizeScript>().UpdateStacks(body.inventory.GetItemCount(VariantOnSurvivor));
+                    break;
+                case 8:
+                    if (burdenCount > 0)
+                    {
+                        body.gameObject.GetComponent<FakeBodySizeScript>().SetBodyMultiplier(body.baseNameToken, body);
+                        body.gameObject.GetComponent<FakeBodySizeScript>().UpdateStacks(body.inventory.GetItemCount(HerBurden.itemIndex), body);
+                    }
+                    if (recluseCount > 0)
+                    {
+                        body.gameObject.GetComponent<FakeBodySizeScript>().SetBodyMultiplier(body.baseNameToken, body);
+                        body.gameObject.GetComponent<FakeBodySizeScript>().UpdateStacks(body.inventory.GetItemCount(HerRecluse.itemIndex), body);
+                    }
+                    if (furyCount > 0)
+                    {
+                        body.gameObject.GetComponent<FakeBodySizeScript>().SetBodyMultiplier(body.baseNameToken, body);
+                        body.gameObject.GetComponent<FakeBodySizeScript>().UpdateStacks(body.inventory.GetItemCount(HerFury.itemIndex), body);
+                    }
+                    if (torporCount > 0)
+                    {
+                        body.gameObject.GetComponent<FakeBodySizeScript>().SetBodyMultiplier(body.baseNameToken, body);
+                        body.gameObject.GetComponent<FakeBodySizeScript>().UpdateStacks(body.inventory.GetItemCount(HerTorpor.itemIndex), body);
+                    }
+                    if (rancorCount > 0)
+                    {
+                        body.gameObject.GetComponent<FakeBodySizeScript>().SetBodyMultiplier(body.baseNameToken, body);
+                        body.gameObject.GetComponent<FakeBodySizeScript>().UpdateStacks(body.inventory.GetItemCount(HerRancor.itemIndex), body);
+                    }
+                    if (panicCount > 0)
+                    {
+                        body.gameObject.GetComponent<FakeBodySizeScript>().SetBodyMultiplier(body.baseNameToken, body);
+                        body.gameObject.GetComponent<FakeBodySizeScript>().UpdateStacks(body.inventory.GetItemCount(HerPanic.itemIndex), body);
+                    }
+                    break;
+                case 9:
+                    int temp = body.inventory.GetItemCount(VariantOnSurvivor);
+                    int total = burdenCount + recluseCount + furyCount + torporCount + rancorCount + panicCount + temp;
+                    body.gameObject.GetComponent<BodySizeScript>().SetBodyMultiplier(body.baseNameToken);
+                    body.gameObject.GetComponent<BodySizeScript>().UpdateStacks(total);
+                    break;
             }
         }
-
         public void WhoKnows()
         {
             IL.RoR2.CharacterBody.RecalculateStats += (il) =>
@@ -818,6 +941,39 @@ namespace Her_Burden
                 }
                 catch (Exception ex) { base.Logger.LogError(ex); }
             };
+        }
+    }
+    public class Content : IContentPackProvider
+    {
+        public ContentPack contentPack = new ContentPack();
+
+        public string identifier
+        {
+            get { return "Content"; }
+        }
+
+        public IEnumerator LoadStaticContentAsync(LoadStaticContentAsyncArgs args)
+        {
+            EquipmentDef[] equipmentDefs = new EquipmentDef[] { Her_Burden.HerGamble };
+            ArtifactDef[] artifactDefs = new ArtifactDef[] { Her_Burden.HerCurse };
+            contentPack.identifier = identifier;
+            contentPack.equipmentDefs.Add(equipmentDefs);
+            contentPack.artifactDefs.Add(artifactDefs);
+            args.ReportProgress(1f);
+            yield break;
+        }
+
+        public IEnumerator GenerateContentPackAsync(GetContentPackAsyncArgs args)
+        {
+            ContentPack.Copy(contentPack, args.output);
+            args.ReportProgress(1f);
+            yield break;
+        }
+
+        public IEnumerator FinalizeAsync(FinalizeAsyncArgs args)
+        {
+            args.ReportProgress(1f);
+            yield break;
         }
     }
 }

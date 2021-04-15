@@ -35,6 +35,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Artifact\HerCurseArtifact.cs" />
+    <Compile Include="FakeSizeScripts\FakeBodySizeScript.cs" />
+    <Compile Include="FakeSizeScripts\FakeBurdenPrefabSizeScript.cs" />
+    <Compile Include="FakeSizeScripts\FakeFuryPrefabSizeScript.cs" />
+    <Compile Include="FakeSizeScripts\FakePanicPrefabSizeScript.cs" />
+    <Compile Include="FakeSizeScripts\FakeRancorSizeScript.cs" />
+    <Compile Include="FakeSizeScripts\FakeReclusePrefabSizeScript.cs" />
+    <Compile Include="FakeSizeScripts\FakeSizeHandoffManager.cs" />
+    <Compile Include="FakeSizeScripts\FakeTorporPrefabSizeScript.cs" />
     <Compile Include="Her_Burden.cs" />
     <Compile Include="Items\HerExperimentalEquipment.cs" />
     <Compile Include="Items\HerPanicItem.cs" />
